@@ -1,4 +1,4 @@
-import HomeMap from "./_components/Map";
+import HomeMap from "./_components/HomeMap";
 
 const HomePage = () => {
   return (
