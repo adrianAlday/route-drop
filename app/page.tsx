@@ -1,6 +1,12 @@
 import HomeMap from "./_components/HomeMap";
 
-const HomePage = async ({ searchParams }) => {
+import { Params } from "./_utils/types";
+
+type HomePageProps = {
+  searchParams: Promise<Params>;
+};
+
+const HomePage = async ({ searchParams }: HomePageProps) => {
   const resolvedParams = { ...(await searchParams) };
 
   const getRoute = async (id: string) =>
@@ -13,7 +19,9 @@ const HomePage = async ({ searchParams }) => {
       });
 
   const routeData = await Promise.all(
-    resolvedParams.r.split(",").map((routeId: string) => getRoute(routeId)),
+    (resolvedParams.r as string)
+      .split(",")
+      .map((routeId: string) => getRoute(routeId)),
   );
 
   return (
