@@ -2,8 +2,22 @@
 
 import { useState, useEffect } from "react";
 import Bouncer from "./Bouncer";
+import { LatLngTuple } from "@googlemaps/polyline-codec";
 
-const HomeMap = () => {
+export type Route = {
+  id: string;
+  title: string;
+  stats: { [key: string]: number };
+  coordinate: [number, number];
+  coordinates: LatLngTuple[];
+  elevations: LatLngTuple[];
+};
+
+type HomeMapProps = {
+  routeData: Route[];
+};
+
+const HomeMap = ({ routeData }: HomeMapProps) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {}, []);

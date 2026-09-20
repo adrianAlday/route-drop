@@ -1,4 +1,5 @@
-import HomeMap from "./_components/HomeMap";
+import { decode } from "@googlemaps/polyline-codec";
+import HomeMap, { Route } from "./_components/HomeMap";
 
 import { Params } from "./_utils/types";
 
@@ -14,19 +15,32 @@ const HomePage = async ({ searchParams }: HomePageProps) => {
       next: { revalidate: 60 * 60 },
     })
       .then(async (response) => await response.json())
+      .then(async (json) => {
+        const { id, title, stats, geometry } = json;
+
+        return {
+          id,
+          title,
+          stats,
+          coordinate: geometry.coordinate,
+          coordinates: decode(geometry.polyline),
+          elevations: decode(geometry.elevations),
+        };
+      })
+
       .catch((error) => {
         console.error(`Route Error: ${error}`);
       });
 
-  const routeData = await Promise.all(
+  const routeData = (await Promise.all(
     (resolvedParams.r as string)
       .split(",")
       .map((routeId: string) => getRoute(routeId)),
-  );
+  )) as Route[];
 
   return (
     <main>
-      <HomeMap />
+      <HomeMap routeData={routeData} />
     </main>
   );
 };
