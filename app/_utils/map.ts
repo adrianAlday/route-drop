@@ -6,6 +6,8 @@ export const zoom = 16;
 
 export const minZoom = 1;
 
+export const maxZoom = 18;
+
 export const getById = (id: string) =>
   document.getElementById(id) as HTMLElement;
 

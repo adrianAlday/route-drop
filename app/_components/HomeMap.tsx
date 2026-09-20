@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react";
 import Bouncer from "./Bouncer";
 import { LatLngTuple } from "@googlemaps/polyline-codec";
-import { getById, zoom, minZoom, setupMap } from "../_utils/map";
-import { centerMean, featureCollection, point } from "@turf/turf";
+import { getById, zoom, minZoom, maxZoom, setupMap } from "../_utils/map";
 import * as maplibreGl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import * as turf from "@turf/turf";
+import { centerMean, featureCollection, point } from "@turf/turf";
 
 export type Route = {
   id: string;
@@ -50,8 +51,6 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
       localIdeographFontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
     });
 
-    console.log("center", center);
-
     setupMap(mapInstance);
 
     const geolocateControl = new maplibreGl.GeolocateControl({
@@ -74,19 +73,309 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
       "top-right",
     );
 
-    console.log("hiya");
-
     mapInstance.on("load", () => {
       mapInstance.setProjection({
         type: "globe",
       });
 
+      routeData.forEach((route) => {
+        const cleanGeoJson = turf.cleanCoords(
+          turf.lineString(
+            route.coordinates.map((coordinate) => coordinate.reverse()),
+          ),
+        ).geometry.coordinates;
+
+        const fitGeoJson = () => {
+          mapInstance.fitBounds(
+            cleanGeoJson.reduce(
+              (
+                bounds: maplibreGl.LngLatBounds,
+                coordinates: [number, number],
+              ) => bounds.extend(coordinates),
+              new maplibreGl.LngLatBounds(
+                initialCoordinates,
+                initialCoordinates,
+              ),
+            ),
+            {
+              padding: { top: 36, bottom: 16, left: 16, right: 16 + 32 + 16 },
+              maxZoom,
+            },
+          );
+        };
+
+        fitGeoJson();
+
+        const lineString = turf.lineString(cleanGeoJson);
+
+        const meterUnitsOptions = {
+          units: "meters" as turf.helpers.Units,
+        };
+
+        const totalMeters = turf.length(lineString, meterUnitsOptions);
+
+        let startDistance = 0;
+
+        const segments = [];
+
+        const terrainResolutionMeters = 10;
+
+        const segmentMeters = terrainResolutionMeters * 5;
+
+        while (startDistance < totalMeters) {
+          let endDistance = startDistance + segmentMeters;
+
+          if (endDistance > totalMeters) {
+            endDistance = totalMeters;
+          }
+
+          const segment = turf.lineSliceAlong(
+            lineString,
+            startDistance,
+            endDistance,
+            meterUnitsOptions,
+          );
+
+          segment.properties = {
+            distanceMeters: endDistance - startDistance,
+            startDistance,
+            endDistance,
+          };
+
+          segment.id = endDistance;
+
+          segments.push(segment);
+
+          startDistance = endDistance;
+        }
+
+        const featureCollection = turf.featureCollection(segments);
+
+        const traceFeatureCollection = featureCollection;
+
+        mapInstance.once("idle", async () => {
+          await new Promise((resolve) => setTimeout(resolve, 1000 * 1));
+
+          const fittedCenter = mapInstance.getCenter();
+
+          featureCollection.features.forEach((feature) => {
+            const coordinates = feature.geometry.coordinates;
+
+            const startCoordinates = coordinates[0] as [number, number];
+            const endCoordinates = coordinates[coordinates.length - 1] as [
+              number,
+              number,
+            ];
+
+            const startElevation =
+              mapInstance.queryTerrainElevation(startCoordinates) || 0;
+            const endElevation =
+              mapInstance.queryTerrainElevation(endCoordinates) || 0;
+
+            if (!feature.properties) {
+              feature.properties = {};
+            }
+
+            const rise = endElevation - startElevation;
+            const run = feature.properties.distanceMeters;
+            const slopePercent = run > 0 ? (rise / run) * 100 : 0;
+
+            feature.properties.slope = slopePercent;
+            feature.properties.startElevation = startElevation;
+            feature.properties.endElevation = endElevation;
+          });
+
+          const routeSourceName = `routeSource ${route.id}`;
+
+          mapInstance.addSource(routeSourceName, {
+            type: "geojson",
+            data: featureCollection,
+          });
+
+          const slopePercentForColor = 2;
+
+          mapInstance.addLayer({
+            source: routeSourceName,
+            id: `routeLayer ${route.id}`,
+            type: "line",
+            layout: {
+              "line-join": "round",
+              "line-cap": "round",
+            },
+            paint: {
+              "line-width": 2,
+              "line-color": [
+                "case",
+                ["to-boolean", ["feature-state", "drawn"]],
+                [
+                  "step",
+                  ["get", "slope"],
+                  "rgb(25%,25%,80%)",
+                  -1 * slopePercentForColor,
+                  "rgb(43%,43%,43%)",
+                  1 * slopePercentForColor,
+                  "rgb(90%,20%,20%)",
+                ],
+                "transparent",
+              ],
+            },
+          });
+
+          const routeTraceSourceName = `routeTraceSource ${route.id}`;
+
+          mapInstance.addSource(routeTraceSourceName, {
+            type: "geojson",
+            data: traceFeatureCollection,
+          });
+
+          mapInstance.addLayer({
+            source: routeTraceSourceName,
+            id: `routeTraceLayer ${route.id}`,
+            type: "line",
+            layout: {
+              "line-join": "round",
+              "line-cap": "round",
+            },
+            paint: {
+              "line-width": 2,
+              "line-color": [
+                "case",
+                ["to-boolean", ["feature-state", "drawn"]],
+                "rgb(240,246,252)",
+                "transparent",
+              ],
+            },
+          });
+
+          let animateCounter = 0;
+
+          const refreshRate = 120;
+
+          const targetSeconds = 1;
+
+          const theoreticalChunkSize =
+            featureCollection.features.length / (refreshRate * targetSeconds);
+
+          const chunkSize = Math.floor(theoreticalChunkSize) || 1;
+
+          const getChunkFeaturesStartIndex = (counterValue: number) =>
+            (counterValue * chunkSize) % featureCollection.features.length;
+
+          const getChunkFeatures = (startIndex: number) =>
+            featureCollection.features.slice(
+              startIndex,
+              startIndex + chunkSize,
+            );
+
+          const miles = Array.from(
+            {
+              length: Math.floor(
+                turf.convertLength(totalMeters, "meters", "miles"),
+              ),
+            },
+            (_, index) => index + 1,
+          ).map((mile) => ({
+            mile,
+            meters: turf.convertLength(mile, "miles", "meters"),
+            coordinates: turf.along(lineString, mile, {
+              units: "miles",
+            }).geometry.coordinates,
+          }));
+
+          const animateRoute = async () => {
+            const isFirstLoop =
+              animateCounter * chunkSize < featureCollection.features.length;
+
+            const startIndex = getChunkFeaturesStartIndex(animateCounter);
+
+            const chunkFeatures = getChunkFeatures(startIndex);
+
+            const lastChunkStartIndex = getChunkFeaturesStartIndex(
+              animateCounter - 1,
+            );
+
+            const lastChunkFeatures = getChunkFeatures(lastChunkStartIndex);
+
+            if (isFirstLoop) {
+              chunkFeatures.forEach((feature) => {
+                mapInstance.setFeatureState(
+                  {
+                    source: routeSourceName,
+                    id: feature.id,
+                  },
+                  { drawn: true },
+                );
+              });
+
+              miles
+                .filter(
+                  (mile) =>
+                    mile.meters > chunkFeatures[0].properties?.startDistance &&
+                    mile.meters <=
+                      chunkFeatures.reverse()[0].properties?.endDistance,
+                )
+                .forEach((mile) => {
+                  const mileMarkerElement = document.createElement("div");
+                  mileMarkerElement.textContent = `${mile.mile}`;
+                  mileMarkerElement.style.fontSize = "16px";
+                  mileMarkerElement.style.fontFamily =
+                    "-apple-system, BlinkMacSystemFont, sans-serif";
+                  mileMarkerElement.style.color = "rgba(38,41,46,0.66)";
+                  mileMarkerElement.style.fontWeight = "500";
+                  mileMarkerElement.style.textShadow =
+                    "-1.5px -1.5px 1.5px rgba(247,248,250,0.66), 1.5px -1.5px 1.5px rgba(247,248,250,0.66), -1.5px  1.5px 1.5px rgba(247,248,250,0.66), 1.5px  1.5px 1.5px rgba(247,248,250,0.66)";
+
+                  new maplibreGl.Marker({
+                    element: mileMarkerElement,
+                  })
+                    .setLngLat(mile.coordinates as [number, number])
+                    .addTo(mapInstance);
+                });
+            }
+
+            lastChunkFeatures.forEach((feature) => {
+              mapInstance.setFeatureState(
+                {
+                  source: routeTraceSourceName,
+                  id: feature.id,
+                },
+                { drawn: false },
+              );
+            });
+
+            if (startIndex < lastChunkStartIndex) {
+              await new Promise((resolve) => setTimeout(resolve, 1000 * 2));
+            }
+
+            chunkFeatures.forEach((feature) => {
+              mapInstance.setFeatureState(
+                {
+                  source: routeTraceSourceName,
+                  id: feature.id,
+                },
+                { drawn: true },
+              );
+            });
+
+            await new Promise((resolve) =>
+              setTimeout(
+                resolve,
+                ((1000 * 1) / refreshRate) * (chunkSize / theoreticalChunkSize),
+              ),
+            );
+
+            requestAnimationFrame(animateRoute);
+
+            animateCounter = animateCounter + 1;
+          };
+
+          await new Promise((resolve) => setTimeout(resolve, 1000 * 0.1));
+          animateRoute();
+        });
+      });
+
       setLoading(false);
-
-      console.log("load");
     });
-
-    console.log("end");
   }, [routeData]);
 
   return (
