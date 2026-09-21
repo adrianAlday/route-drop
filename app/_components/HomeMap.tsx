@@ -57,17 +57,7 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
       showAccuracyCircle: true,
     });
 
-    mapInstance.addControl(geolocateControl, "top-right");
-
-    mapInstance.addControl(
-      new maplibreGl.NavigationControl({
-        visualizePitch: false,
-        visualizeRoll: false,
-        showZoom: true,
-        showCompass: false,
-      }),
-      "top-right",
-    );
+    mapInstance.addControl(geolocateControl, "bottom-right");
 
     const routeColors = [
       "rgb(234,57,128)",
