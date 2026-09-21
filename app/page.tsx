@@ -77,6 +77,5 @@ const HomePage = async ({ searchParams }: HomePageProps) => {
 
 export default HomePage;
 
-// opengraph image uses titles
 // serverside loader
 // encode param?
