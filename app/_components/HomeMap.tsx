@@ -84,71 +84,30 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
       },
     ) as maplibreGl.CenterZoomBearing;
 
+    const meterUnitsOptions = {
+      units: "meters" as turf.helpers.Units,
+    };
+
+    const routeColors = [
+      "rgb(80%,25%,20%)",
+      "rgb(25%,80%,25%)",
+      "rgb(25%,25%,80%)",
+    ];
+
     mapInstance.on("load", () => {
       mapInstance.setProjection({
         type: "globe",
       });
 
-      mapInstance.jumpTo(boundingCamera);
-
       routeData.forEach((route, index) => {
-        const meterUnitsOptions = {
-          units: "meters" as turf.helpers.Units,
-        };
-
-        const totalMeters = turf.length(route.lineString, meterUnitsOptions);
-
-        let startDistance = 0;
-
-        const segments = [];
-
-        const terrainResolutionMeters = 10;
-
-        const segmentMeters = terrainResolutionMeters * 5;
-
-        while (startDistance < totalMeters) {
-          let endDistance = startDistance + segmentMeters;
-
-          if (endDistance > totalMeters) {
-            endDistance = totalMeters;
-          }
-
-          const segment = turf.lineSliceAlong(
-            route.lineString,
-            startDistance,
-            endDistance,
-            meterUnitsOptions,
-          );
-
-          segment.properties = {
-            distanceMeters: endDistance - startDistance,
-            startDistance,
-            endDistance,
-          };
-
-          segment.id = endDistance;
-
-          segments.push(segment);
-
-          startDistance = endDistance;
-        }
-
-        const featureCollection = turf.featureCollection(segments);
-
-        const traceFeatureCollection = featureCollection;
-
         const routeSourceName = `routeSource ${route.id}`;
 
         mapInstance.addSource(routeSourceName, {
           type: "geojson",
-          data: featureCollection,
+          data: route.lineString,
         });
 
-        const routeColor = [
-          "rgb(80%,25%,20%)",
-          "rgb(25%,80%,25%)",
-          "rgb(25%,25%,80%)",
-        ][index];
+        const routeColor = routeColors[index];
 
         mapInstance.addLayer({
           source: routeSourceName,
@@ -164,133 +123,43 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
           },
         });
 
-        const routeTraceSourceName = `routeTraceSource ${route.id}`;
+        const totalMeters = turf.length(route.lineString, meterUnitsOptions);
 
-        mapInstance.addSource(routeTraceSourceName, {
-          type: "geojson",
-          data: traceFeatureCollection,
-        });
-
-        mapInstance.addLayer({
-          source: routeTraceSourceName,
-          id: `routeTraceLayer ${route.id}`,
-          type: "line",
-          layout: {
-            "line-join": "round",
-            "line-cap": "round",
+        const miles = Array.from(
+          {
+            length: Math.floor(
+              turf.convertLength(totalMeters, "meters", "miles"),
+            ),
           },
-          paint: {
-            "line-width": 2,
-            "line-color": [
-              "case",
-              ["to-boolean", ["feature-state", "drawn"]],
-              "rgb(240,246,252)",
-              "transparent",
-            ],
-          },
-        });
+          (_, index) => index + 1,
+        ).map((mile) => ({
+          mile,
+          meters: turf.convertLength(mile, "miles", "meters"),
+          coordinates: turf.along(route.lineString, mile, {
+            units: "miles",
+          }).geometry.coordinates,
+        }));
 
-        mapInstance.once("idle", async () => {
-          let animateCounter = 0;
+        miles.forEach((mile) => {
+          const mileMarkerElement = document.createElement("div");
+          mileMarkerElement.textContent = `${mile.mile}`;
+          mileMarkerElement.style.fontSize = "16px";
+          mileMarkerElement.style.fontFamily =
+            "-apple-system, BlinkMacSystemFont, sans-serif";
+          mileMarkerElement.style.color = routeColor;
+          mileMarkerElement.style.fontWeight = "500";
+          mileMarkerElement.style.textShadow =
+            "-1.5px -1.5px 1.5px rgba(247,248,250,0.66), 1.5px -1.5px 1.5px rgba(247,248,250,0.66), -1.5px  1.5px 1.5px rgba(247,248,250,0.66), 1.5px  1.5px 1.5px rgba(247,248,250,0.66)";
 
-          const refreshRate = 120;
-
-          const targetSeconds = 1;
-
-          const theoreticalChunkSize =
-            featureCollection.features.length / (refreshRate * targetSeconds);
-
-          const chunkSize = Math.floor(theoreticalChunkSize) || 1;
-
-          const getChunkFeaturesStartIndex = (counterValue: number) =>
-            (counterValue * chunkSize) % featureCollection.features.length;
-
-          const getChunkFeatures = (startIndex: number) =>
-            featureCollection.features.slice(
-              startIndex,
-              startIndex + chunkSize,
-            );
-
-          const miles = Array.from(
-            {
-              length: Math.floor(
-                turf.convertLength(totalMeters, "meters", "miles"),
-              ),
-            },
-            (_, index) => index + 1,
-          ).map((mile) => ({
-            mile,
-            meters: turf.convertLength(mile, "miles", "meters"),
-            coordinates: turf.along(route.lineString, mile, {
-              units: "miles",
-            }).geometry.coordinates,
-          }));
-
-          miles.forEach((mile) => {
-            const mileMarkerElement = document.createElement("div");
-            mileMarkerElement.textContent = `${mile.mile}`;
-            mileMarkerElement.style.fontSize = "16px";
-            mileMarkerElement.style.fontFamily =
-              "-apple-system, BlinkMacSystemFont, sans-serif";
-            mileMarkerElement.style.color = routeColor;
-            mileMarkerElement.style.fontWeight = "500";
-            mileMarkerElement.style.textShadow =
-              "-1.5px -1.5px 1.5px rgba(247,248,250,0.66), 1.5px -1.5px 1.5px rgba(247,248,250,0.66), -1.5px  1.5px 1.5px rgba(247,248,250,0.66), 1.5px  1.5px 1.5px rgba(247,248,250,0.66)";
-
-            new maplibreGl.Marker({
-              element: mileMarkerElement,
-            })
-              .setLngLat(mile.coordinates as [number, number])
-              .addTo(mapInstance);
-          });
-
-          const animateRoute = async () => {
-            const startIndex = getChunkFeaturesStartIndex(animateCounter);
-
-            const chunkFeatures = getChunkFeatures(startIndex);
-
-            const lastChunkStartIndex = getChunkFeaturesStartIndex(
-              animateCounter - 1,
-            );
-
-            const lastChunkFeatures = getChunkFeatures(lastChunkStartIndex);
-
-            lastChunkFeatures.forEach((feature) => {
-              mapInstance.setFeatureState(
-                {
-                  source: routeTraceSourceName,
-                  id: feature.id,
-                },
-                { drawn: false },
-              );
-            });
-
-            chunkFeatures.forEach((feature) => {
-              mapInstance.setFeatureState(
-                {
-                  source: routeTraceSourceName,
-                  id: feature.id,
-                },
-                { drawn: true },
-              );
-            });
-
-            await new Promise((resolve) =>
-              setTimeout(
-                resolve,
-                ((1000 * 1) / refreshRate) * (chunkSize / theoreticalChunkSize),
-              ),
-            );
-
-            requestAnimationFrame(animateRoute);
-
-            animateCounter = animateCounter + 1;
-          };
-
-          await new Promise((resolve) => setTimeout(resolve, 1000 * 0.1));
-          animateRoute();
+          new maplibreGl.Marker({
+            element: mileMarkerElement,
+          })
+            .setLngLat(mile.coordinates as [number, number])
+            .addTo(mapInstance);
         });
       });
+
+      mapInstance.jumpTo(boundingCamera);
 
       setLoading(false);
     });
