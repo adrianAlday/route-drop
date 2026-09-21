@@ -77,5 +77,4 @@ const HomePage = async ({ searchParams }: HomePageProps) => {
 
 export default HomePage;
 
-// serverside loader
 // encode param?
