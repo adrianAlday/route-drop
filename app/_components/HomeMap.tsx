@@ -61,7 +61,7 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
 
     const routeColors = [
       "rgb(234,57,128)",
-      "rgb(128,234,0)",
+      "rgb(217,252,82)",
       "rgb(57,128,234)",
     ];
 
@@ -76,6 +76,20 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
         mapInstance.addSource(routeSourceName, {
           type: "geojson",
           data: route.lineString,
+        });
+
+        mapInstance.addLayer({
+          source: routeSourceName,
+          id: `routeLayer ${route.id} shadow`,
+          type: "line",
+          layout: {
+            "line-join": "round",
+            "line-cap": "round",
+          },
+          paint: {
+            "line-width": 6,
+            "line-color": "rgb(1,8,43)",
+          },
         });
 
         const routeColor = routeColors[index];
@@ -96,40 +110,46 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
 
         Array.from(
           {
-            length: Math.floor(
-              turf.convertLength(
-                turf.length(route.lineString, {
-                  units: "meters" as turf.helpers.Units,
-                }),
-                "meters",
-                "miles",
-              ),
-            ),
+            length:
+              Math.floor(
+                turf.convertLength(
+                  turf.length(route.lineString, {
+                    units: "meters" as turf.helpers.Units,
+                  }),
+                  "meters",
+                  "miles",
+                ),
+              ) + 1,
           },
-          (_, index) => index + 1,
+          (_, index) => index,
         )
           .map((mile) => ({
-            mile,
+            miles: mile,
             meters: turf.convertLength(mile, "miles", "meters"),
             coordinates: turf.along(route.lineString, mile, {
               units: "miles",
             }).geometry.coordinates,
           }))
-          .forEach((mile) => {
+          .forEach((marker) => {
+            const isStart = marker.miles === 0;
+
             const mileMarkerElement = document.createElement("div");
-            mileMarkerElement.textContent = `${mile.mile}`;
+            mileMarkerElement.textContent = isStart ? "★" : `${marker.miles}`;
             mileMarkerElement.style.fontSize = "16px";
             mileMarkerElement.style.fontFamily =
               "-apple-system, BlinkMacSystemFont, sans-serif";
-            mileMarkerElement.style.color = routeColor;
+            mileMarkerElement.style.color = isStart
+              ? "rgb(1,8,43)"
+              : routeColor;
             mileMarkerElement.style.fontWeight = "1000";
             mileMarkerElement.style.textShadow =
-              "-1.5px -1.5px 1.5px rgba(247,248,250,0.66), 1.5px -1.5px 1.5px rgba(247,248,250,0.66), -1.5px  1.5px 1.5px rgba(247,248,250,0.66), 1.5px  1.5px 1.5px rgba(247,248,250,0.66)";
+              "0 0 1px rgb(247,248,250), 0 0 2px rgb(247,248,250), 0 0 3px rgb(247,248,250), 0 0 4px rgb(247,248,250)";
+            mileMarkerElement.className = "marker";
 
             new maplibreGl.Marker({
               element: mileMarkerElement,
             })
-              .setLngLat(mile.coordinates as [number, number])
+              .setLngLat(marker.coordinates as [number, number])
               .addTo(mapInstance);
           });
       });
@@ -159,6 +179,12 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
     <div className="w-dvw">
       <Bouncer classNames={loading ? "block" : "hidden"} />
 
+      <style>
+        {`
+          .marker {
+            -webkit-text-stroke: 1px rgb(1,8,43);
+        `}
+      </style>
       <div className={`${loading ? "hidden" : "block"} relative`}>
         <div id={mapContainerId} className={"h-dvh"} />
       </div>
