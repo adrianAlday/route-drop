@@ -88,11 +88,7 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
       units: "meters" as turf.helpers.Units,
     };
 
-    const routeColors = [
-      "rgb(80%,25%,20%)",
-      "rgb(25%,80%,25%)",
-      "rgb(25%,25%,80%)",
-    ];
+    const routeColors = ["rgb(234,57,128)", "rgb(0,234,0)", "rgb(57,128,234)"];
 
     mapInstance.on("load", () => {
       mapInstance.setProjection({
