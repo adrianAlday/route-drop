@@ -1,7 +1,7 @@
 import { decode } from "@googlemaps/polyline-codec";
 import HomeMap, { Route } from "./_components/HomeMap";
-
 import { Params } from "./_utils/types";
+import * as turf from "@turf/turf";
 
 type HomePageProps = {
   searchParams: Promise<Params>;
@@ -24,6 +24,14 @@ const HomePage = async ({ searchParams }: HomePageProps) => {
 
         const coordinates = decode(geometry.polyline);
 
+        const lineString = turf.lineString(
+          turf.cleanCoords(
+            turf.lineString(
+              coordinates.map((coordinate) => coordinate.reverse()),
+            ),
+          ).geometry.coordinates,
+        );
+
         return {
           id,
           title,
@@ -31,6 +39,7 @@ const HomePage = async ({ searchParams }: HomePageProps) => {
           coordinate,
           elevations,
           coordinates,
+          lineString,
         };
       })
 

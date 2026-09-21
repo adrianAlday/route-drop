@@ -8,6 +8,7 @@ import * as maplibreGl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import * as turf from "@turf/turf";
 import { centerMean, featureCollection, point } from "@turf/turf";
+import type { Feature, LineString } from "geojson";
 
 export type Route = {
   id: string;
@@ -16,6 +17,7 @@ export type Route = {
   coordinate: [number, number];
   coordinates: LatLngTuple[];
   elevations: LatLngTuple[];
+  lineString: Feature<LineString>;
 };
 
 type HomeMapProps = {
@@ -78,41 +80,27 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
         type: "globe",
       });
 
+      const boundingBox = turf.bbox(
+        turf.featureCollection(routeData.map((route) => route.lineString)),
+      );
+
+      mapInstance.fitBounds(
+        [
+          [boundingBox[0], boundingBox[1]],
+          [boundingBox[2], boundingBox[3]],
+        ],
+        {
+          padding: { top: 16, bottom: 16, left: 16, right: 16 + 32 + 16 },
+          maxZoom,
+        },
+      );
+
       routeData.forEach((route, index) => {
-        const cleanGeoJson = turf.cleanCoords(
-          turf.lineString(
-            route.coordinates.map((coordinate) => coordinate.reverse()),
-          ),
-        ).geometry.coordinates;
-
-        const fitGeoJson = () => {
-          mapInstance.fitBounds(
-            cleanGeoJson.reduce(
-              (
-                bounds: maplibreGl.LngLatBounds,
-                coordinates: [number, number],
-              ) => bounds.extend(coordinates),
-              new maplibreGl.LngLatBounds(
-                initialCoordinates,
-                initialCoordinates,
-              ),
-            ),
-            {
-              padding: { top: 36, bottom: 16, left: 16, right: 16 + 32 + 16 },
-              maxZoom,
-            },
-          );
-        };
-
-        fitGeoJson();
-
-        const lineString = turf.lineString(cleanGeoJson);
-
         const meterUnitsOptions = {
           units: "meters" as turf.helpers.Units,
         };
 
-        const totalMeters = turf.length(lineString, meterUnitsOptions);
+        const totalMeters = turf.length(route.lineString, meterUnitsOptions);
 
         let startDistance = 0;
 
@@ -130,7 +118,7 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
           }
 
           const segment = turf.lineSliceAlong(
-            lineString,
+            route.lineString,
             startDistance,
             endDistance,
             meterUnitsOptions,
@@ -237,7 +225,7 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
           ).map((mile) => ({
             mile,
             meters: turf.convertLength(mile, "miles", "meters"),
-            coordinates: turf.along(lineString, mile, {
+            coordinates: turf.along(route.lineString, mile, {
               units: "miles",
             }).geometry.coordinates,
           }));
