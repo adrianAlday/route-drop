@@ -48,16 +48,18 @@ const HomePage = async ({ searchParams }: HomePageProps) => {
       });
 
   const routeData = (
-    (await Promise.all(
-      (resolvedParams.r as string)
-        .split(",")
-        .map((routeId: string) => getRoute(routeId)),
-    )) as Route[]
+    (resolvedParams.r
+      ? await Promise.all(
+          (resolvedParams.r as string)
+            .split(",")
+            .map((routeId: string) => getRoute(routeId)),
+        )
+      : []) as Route[]
   ).sort((a, b) => b.stats.distance - a.stats.distance);
 
   return (
     <main>
-      <HomeMap routeData={routeData} />
+      {routeData.length ? <HomeMap routeData={routeData} /> : <div />}
     </main>
   );
 };
