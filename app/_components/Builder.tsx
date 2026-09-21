@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { URLPattern } from "urlpattern-polyfill";
 
 const Builder = () => {
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
