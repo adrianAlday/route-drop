@@ -15,3 +15,7 @@ body {
   color: var(--foreground);
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
 }
+
+textarea:focus {
+  outline: none;
+}

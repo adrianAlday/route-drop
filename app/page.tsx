@@ -2,6 +2,7 @@ import { decode } from "@googlemaps/polyline-codec";
 import HomeMap, { Route } from "./_components/HomeMap";
 import { Params } from "./_utils/types";
 import * as turf from "@turf/turf";
+import Builder from "./_components/Builder";
 
 type HomePageProps = {
   searchParams: Promise<Params>;
@@ -59,7 +60,7 @@ const HomePage = async ({ searchParams }: HomePageProps) => {
 
   return (
     <main>
-      {routeData.length ? <HomeMap routeData={routeData} /> : <div />}
+      {routeData.length ? <HomeMap routeData={routeData} /> : <Builder />}
     </main>
   );
 };
@@ -67,5 +68,4 @@ const HomePage = async ({ searchParams }: HomePageProps) => {
 export default HomePage;
 
 // opengraph image uses titles
-// if url has no routes, root is wizard to generate urls
 // serverside loader
