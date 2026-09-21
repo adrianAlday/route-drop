@@ -9,6 +9,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import * as turf from "@turf/turf";
 import { centerMean, featureCollection, point } from "@turf/turf";
 import type { Feature, LineString } from "geojson";
+import { routeColors } from "../_utils/colors";
 
 export type Route = {
   id: string;
@@ -58,12 +59,6 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
     });
 
     mapInstance.addControl(geolocateControl, "bottom-right");
-
-    const routeColors = [
-      "rgb(234,57,128)",
-      "rgb(217,252,82)",
-      "rgb(57,128,234)",
-    ];
 
     mapInstance.on("load", () => {
       mapInstance.setProjection({
