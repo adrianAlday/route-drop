@@ -176,7 +176,7 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
               "line-color": [
                 "case",
                 ["to-boolean", ["feature-state", "drawn"]],
-                ["rgb(90%,20%,20%)", "rgb(25%,80%,25%)", "rgb(25%,25%,80%)"][
+                ["rgb(80%,25%,25%)", "rgb(25%,80%,25%)", "rgb(25%,25%,80%)"][
                   index
                 ],
                 "transparent",

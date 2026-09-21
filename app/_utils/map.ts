@@ -10,7 +10,7 @@ export const getById = (id: string) =>
   document.getElementById(id) as HTMLElement;
 
 export const setupMap = (mapInstance: Map) => {
-  mapInstance.setStyle("https://tiles.openfreemap.org/styles/bright", {
+  mapInstance.setStyle("https://tiles.openfreemap.org/styles/positron", {
     transformStyle: (_previousStyle, nextStyle) => {
       // fallback
       // recent issue: https://github.com/hyperknot/openfreemap/issues/112
