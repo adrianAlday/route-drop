@@ -84,15 +84,17 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
         turf.featureCollection(routeData.map((route) => route.lineString)),
       );
 
-      mapInstance.fitBounds(
-        [
-          [boundingBox[0], boundingBox[1]],
-          [boundingBox[2], boundingBox[3]],
-        ],
-        {
-          padding: { top: 16, bottom: 16, left: 16, right: 16 + 32 + 16 },
-          maxZoom,
-        },
+      mapInstance.jumpTo(
+        mapInstance.cameraForBounds(
+          [
+            [boundingBox[0], boundingBox[1]],
+            [boundingBox[2], boundingBox[3]],
+          ],
+          {
+            padding: { top: 16, bottom: 16, left: 16, right: 16 + 32 + 16 },
+            maxZoom,
+          },
+        ) as maplibreGl.CenterZoomBearing,
       );
 
       routeData.forEach((route, index) => {
