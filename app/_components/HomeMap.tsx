@@ -78,7 +78,7 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
         type: "globe",
       });
 
-      routeData.forEach((route) => {
+      routeData.forEach((route, index) => {
         const cleanGeoJson = turf.cleanCoords(
           turf.lineString(
             route.coordinates.map((coordinate) => coordinate.reverse()),
@@ -156,43 +156,12 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
         mapInstance.once("idle", async () => {
           await new Promise((resolve) => setTimeout(resolve, 1000 * 1));
 
-          const fittedCenter = mapInstance.getCenter();
-
-          featureCollection.features.forEach((feature) => {
-            const coordinates = feature.geometry.coordinates;
-
-            const startCoordinates = coordinates[0] as [number, number];
-            const endCoordinates = coordinates[coordinates.length - 1] as [
-              number,
-              number,
-            ];
-
-            const startElevation =
-              mapInstance.queryTerrainElevation(startCoordinates) || 0;
-            const endElevation =
-              mapInstance.queryTerrainElevation(endCoordinates) || 0;
-
-            if (!feature.properties) {
-              feature.properties = {};
-            }
-
-            const rise = endElevation - startElevation;
-            const run = feature.properties.distanceMeters;
-            const slopePercent = run > 0 ? (rise / run) * 100 : 0;
-
-            feature.properties.slope = slopePercent;
-            feature.properties.startElevation = startElevation;
-            feature.properties.endElevation = endElevation;
-          });
-
           const routeSourceName = `routeSource ${route.id}`;
 
           mapInstance.addSource(routeSourceName, {
             type: "geojson",
             data: featureCollection,
           });
-
-          const slopePercentForColor = 2;
 
           mapInstance.addLayer({
             source: routeSourceName,
@@ -207,14 +176,8 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
               "line-color": [
                 "case",
                 ["to-boolean", ["feature-state", "drawn"]],
-                [
-                  "step",
-                  ["get", "slope"],
-                  "rgb(25%,25%,80%)",
-                  -1 * slopePercentForColor,
-                  "rgb(43%,43%,43%)",
-                  1 * slopePercentForColor,
-                  "rgb(90%,20%,20%)",
+                ["rgb(90%,20%,20%)", "rgb(25%,80%,25%)", "rgb(25%,25%,80%)"][
+                  index
                 ],
                 "transparent",
               ],
