@@ -63,3 +63,6 @@ const HomePage = async ({ searchParams }: HomePageProps) => {
 };
 
 export default HomePage;
+
+// opengraph image uses titles
+// if url has no routes, root is wizard to generate urls
