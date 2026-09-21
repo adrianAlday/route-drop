@@ -34,20 +34,14 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
       return;
     }
 
-    const center = centerMean(
-      featureCollection(routeData.map((route) => point(route.coordinates[0]))),
-    ).geometry.coordinates.reverse() as [number, number];
-
-    const initialCoordinates = center;
-
-    const initialPosition = {
-      center: initialCoordinates,
-      zoom,
-    };
-
     const mapInstance = new maplibreGl.Map({
       container: mapContainerId,
-      ...initialPosition,
+      center: centerMean(
+        featureCollection(
+          routeData.map((route) => point(route.coordinates[0])),
+        ),
+      ).geometry.coordinates.reverse() as [number, number],
+      zoom,
       minZoom,
       attributionControl: false,
       localIdeographFontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
@@ -75,27 +69,27 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
       "top-right",
     );
 
+    const boundingBox = turf.bbox(
+      turf.featureCollection(routeData.map((route) => route.lineString)),
+    );
+
+    const boundingCamera = mapInstance.cameraForBounds(
+      [
+        [boundingBox[0], boundingBox[1]],
+        [boundingBox[2], boundingBox[3]],
+      ],
+      {
+        padding: { top: 16, bottom: 16, left: 16, right: 16 + 32 + 16 },
+        maxZoom,
+      },
+    ) as maplibreGl.CenterZoomBearing;
+
     mapInstance.on("load", () => {
       mapInstance.setProjection({
         type: "globe",
       });
 
-      const boundingBox = turf.bbox(
-        turf.featureCollection(routeData.map((route) => route.lineString)),
-      );
-
-      mapInstance.jumpTo(
-        mapInstance.cameraForBounds(
-          [
-            [boundingBox[0], boundingBox[1]],
-            [boundingBox[2], boundingBox[3]],
-          ],
-          {
-            padding: { top: 16, bottom: 16, left: 16, right: 16 + 32 + 16 },
-            maxZoom,
-          },
-        ) as maplibreGl.CenterZoomBearing,
-      );
+      mapInstance.jumpTo(boundingCamera);
 
       routeData.forEach((route, index) => {
         const meterUnitsOptions = {
@@ -143,60 +137,60 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
 
         const traceFeatureCollection = featureCollection;
 
+        const routeSourceName = `routeSource ${route.id}`;
+
+        mapInstance.addSource(routeSourceName, {
+          type: "geojson",
+          data: featureCollection,
+        });
+
+        const routeColor = [
+          "rgb(80%,25%,20%)",
+          "rgb(25%,80%,25%)",
+          "rgb(25%,25%,80%)",
+        ][index];
+
+        mapInstance.addLayer({
+          source: routeSourceName,
+          id: `routeLayer ${route.id}`,
+          type: "line",
+          layout: {
+            "line-join": "round",
+            "line-cap": "round",
+          },
+          paint: {
+            "line-width": 2,
+            "line-color": routeColor,
+          },
+        });
+
+        const routeTraceSourceName = `routeTraceSource ${route.id}`;
+
+        mapInstance.addSource(routeTraceSourceName, {
+          type: "geojson",
+          data: traceFeatureCollection,
+        });
+
+        mapInstance.addLayer({
+          source: routeTraceSourceName,
+          id: `routeTraceLayer ${route.id}`,
+          type: "line",
+          layout: {
+            "line-join": "round",
+            "line-cap": "round",
+          },
+          paint: {
+            "line-width": 2,
+            "line-color": [
+              "case",
+              ["to-boolean", ["feature-state", "drawn"]],
+              "rgb(240,246,252)",
+              "transparent",
+            ],
+          },
+        });
+
         mapInstance.once("idle", async () => {
-          await new Promise((resolve) => setTimeout(resolve, 1000 * 1));
-
-          const routeSourceName = `routeSource ${route.id}`;
-
-          mapInstance.addSource(routeSourceName, {
-            type: "geojson",
-            data: featureCollection,
-          });
-
-          mapInstance.addLayer({
-            source: routeSourceName,
-            id: `routeLayer ${route.id}`,
-            type: "line",
-            layout: {
-              "line-join": "round",
-              "line-cap": "round",
-            },
-            paint: {
-              "line-width": 2,
-              "line-color": [
-                "rgb(80%,25%,20%)",
-                "rgb(25%,80%,25%)",
-                "rgb(25%,25%,80%)",
-              ][index],
-            },
-          });
-
-          const routeTraceSourceName = `routeTraceSource ${route.id}`;
-
-          mapInstance.addSource(routeTraceSourceName, {
-            type: "geojson",
-            data: traceFeatureCollection,
-          });
-
-          mapInstance.addLayer({
-            source: routeTraceSourceName,
-            id: `routeTraceLayer ${route.id}`,
-            type: "line",
-            layout: {
-              "line-join": "round",
-              "line-cap": "round",
-            },
-            paint: {
-              "line-width": 2,
-              "line-color": [
-                "case",
-                ["to-boolean", ["feature-state", "drawn"]],
-                "rgb(240,246,252)",
-                "transparent",
-              ],
-            },
-          });
-
           let animateCounter = 0;
 
           const refreshRate = 120;
@@ -238,7 +232,7 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
             mileMarkerElement.style.fontSize = "16px";
             mileMarkerElement.style.fontFamily =
               "-apple-system, BlinkMacSystemFont, sans-serif";
-            mileMarkerElement.style.color = "rgba(38,41,46,0.66)";
+            mileMarkerElement.style.color = routeColor;
             mileMarkerElement.style.fontWeight = "500";
             mileMarkerElement.style.textShadow =
               "-1.5px -1.5px 1.5px rgba(247,248,250,0.66), 1.5px -1.5px 1.5px rgba(247,248,250,0.66), -1.5px  1.5px 1.5px rgba(247,248,250,0.66), 1.5px  1.5px 1.5px rgba(247,248,250,0.66)";
