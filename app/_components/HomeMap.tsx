@@ -87,7 +87,7 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
             "line-cap": "round",
           },
           paint: {
-            "line-width": 6,
+            "line-width": 4,
             "line-color": "rgb(1,8,43)",
           },
         });
@@ -103,7 +103,7 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
             "line-cap": "round",
           },
           paint: {
-            "line-width": 4,
+            "line-width": 2,
             "line-color": routeColor,
           },
         });
