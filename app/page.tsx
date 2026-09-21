@@ -18,13 +18,19 @@ const HomePage = async ({ searchParams }: HomePageProps) => {
       .then(async (json) => {
         const { id, title, stats, geometry } = json;
 
+        const { coordinate } = geometry;
+
+        const elevations = decode(geometry.elevations);
+
+        const coordinates = decode(geometry.polyline);
+
         return {
           id,
           title,
           stats,
-          coordinate: geometry.coordinate,
-          coordinates: decode(geometry.polyline),
-          elevations: decode(geometry.elevations),
+          coordinate,
+          elevations,
+          coordinates,
         };
       })
 
@@ -32,11 +38,13 @@ const HomePage = async ({ searchParams }: HomePageProps) => {
         console.error(`Route Error: ${error}`);
       });
 
-  const routeData = (await Promise.all(
-    (resolvedParams.r as string)
-      .split(",")
-      .map((routeId: string) => getRoute(routeId)),
-  )) as Route[];
+  const routeData = (
+    (await Promise.all(
+      (resolvedParams.r as string)
+        .split(",")
+        .map((routeId: string) => getRoute(routeId)),
+    )) as Route[]
+  ).sort((a, b) => a.stats.distance - b.stats.distance);
 
   return (
     <main>
