@@ -69,26 +69,11 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
       "top-right",
     );
 
-    const boundingBox = turf.bbox(
-      turf.featureCollection(routeData.map((route) => route.lineString)),
-    );
-
-    const boundingCamera = mapInstance.cameraForBounds(
-      [
-        [boundingBox[0], boundingBox[1]],
-        [boundingBox[2], boundingBox[3]],
-      ],
-      {
-        padding: { top: 16, bottom: 16, left: 16, right: 16 + 32 + 16 },
-        maxZoom,
-      },
-    ) as maplibreGl.CenterZoomBearing;
-
-    const meterUnitsOptions = {
-      units: "meters" as turf.helpers.Units,
-    };
-
-    const routeColors = ["rgb(234,57,128)", "rgb(0,234,0)", "rgb(57,128,234)"];
+    const routeColors = [
+      "rgb(234,57,128)",
+      "rgb(128,234,0)",
+      "rgb(57,128,234)",
+    ];
 
     mapInstance.on("load", () => {
       mapInstance.setProjection({
@@ -114,48 +99,67 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
             "line-cap": "round",
           },
           paint: {
-            "line-width": 2,
+            "line-width": 4,
             "line-color": routeColor,
           },
         });
 
-        const totalMeters = turf.length(route.lineString, meterUnitsOptions);
-
-        const miles = Array.from(
+        Array.from(
           {
             length: Math.floor(
-              turf.convertLength(totalMeters, "meters", "miles"),
+              turf.convertLength(
+                turf.length(route.lineString, {
+                  units: "meters" as turf.helpers.Units,
+                }),
+                "meters",
+                "miles",
+              ),
             ),
           },
           (_, index) => index + 1,
-        ).map((mile) => ({
-          mile,
-          meters: turf.convertLength(mile, "miles", "meters"),
-          coordinates: turf.along(route.lineString, mile, {
-            units: "miles",
-          }).geometry.coordinates,
-        }));
+        )
+          .map((mile) => ({
+            mile,
+            meters: turf.convertLength(mile, "miles", "meters"),
+            coordinates: turf.along(route.lineString, mile, {
+              units: "miles",
+            }).geometry.coordinates,
+          }))
+          .forEach((mile) => {
+            const mileMarkerElement = document.createElement("div");
+            mileMarkerElement.textContent = `${mile.mile}`;
+            mileMarkerElement.style.fontSize = "16px";
+            mileMarkerElement.style.fontFamily =
+              "-apple-system, BlinkMacSystemFont, sans-serif";
+            mileMarkerElement.style.color = routeColor;
+            mileMarkerElement.style.fontWeight = "1000";
+            mileMarkerElement.style.textShadow =
+              "-1.5px -1.5px 1.5px rgba(247,248,250,0.66), 1.5px -1.5px 1.5px rgba(247,248,250,0.66), -1.5px  1.5px 1.5px rgba(247,248,250,0.66), 1.5px  1.5px 1.5px rgba(247,248,250,0.66)";
 
-        miles.forEach((mile) => {
-          const mileMarkerElement = document.createElement("div");
-          mileMarkerElement.textContent = `${mile.mile}`;
-          mileMarkerElement.style.fontSize = "16px";
-          mileMarkerElement.style.fontFamily =
-            "-apple-system, BlinkMacSystemFont, sans-serif";
-          mileMarkerElement.style.color = routeColor;
-          mileMarkerElement.style.fontWeight = "500";
-          mileMarkerElement.style.textShadow =
-            "-1.5px -1.5px 1.5px rgba(247,248,250,0.66), 1.5px -1.5px 1.5px rgba(247,248,250,0.66), -1.5px  1.5px 1.5px rgba(247,248,250,0.66), 1.5px  1.5px 1.5px rgba(247,248,250,0.66)";
-
-          new maplibreGl.Marker({
-            element: mileMarkerElement,
-          })
-            .setLngLat(mile.coordinates as [number, number])
-            .addTo(mapInstance);
-        });
+            new maplibreGl.Marker({
+              element: mileMarkerElement,
+            })
+              .setLngLat(mile.coordinates as [number, number])
+              .addTo(mapInstance);
+          });
       });
 
-      mapInstance.jumpTo(boundingCamera);
+      const boundingBox = turf.bbox(
+        turf.featureCollection(routeData.map((route) => route.lineString)),
+      );
+
+      mapInstance.jumpTo(
+        mapInstance.cameraForBounds(
+          [
+            [boundingBox[0], boundingBox[1]],
+            [boundingBox[2], boundingBox[3]],
+          ],
+          {
+            padding: { top: 16, bottom: 16, left: 16, right: 16 + 32 + 16 },
+            maxZoom,
+          },
+        ) as maplibreGl.CenterZoomBearing,
+      );
 
       setLoading(false);
     });
