@@ -5,8 +5,6 @@ import { getRoute } from "@/app/page";
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
 
-export const runtime = "edge";
-
 export const revalidate = 60 * 60;
 
 const loadGoogleFont = async (font: string, weight: number, text: string) => {
