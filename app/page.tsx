@@ -44,7 +44,7 @@ const HomePage = async ({ searchParams }: HomePageProps) => {
         .split(",")
         .map((routeId: string) => getRoute(routeId)),
     )) as Route[]
-  ).sort((a, b) => a.stats.distance - b.stats.distance);
+  ).sort((a, b) => b.stats.distance - a.stats.distance);
 
   return (
     <main>
