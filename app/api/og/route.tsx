@@ -5,7 +5,7 @@ import { getRoute } from "@/app/page";
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
 
-export const revalidate = 60 * 60;
+export const revalidate = 3600;
 
 const loadGoogleFont = async (font: string, weight: number, text: string) => {
   const url = `https://fonts.googleapis.com/css2?family=${font}:ital,wght@1,${weight}&text=${encodeURIComponent(text)}`;
