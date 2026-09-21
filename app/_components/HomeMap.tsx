@@ -174,13 +174,10 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
             paint: {
               "line-width": 2,
               "line-color": [
-                "case",
-                ["to-boolean", ["feature-state", "drawn"]],
-                ["rgb(80%,25%,25%)", "rgb(25%,80%,25%)", "rgb(25%,25%,80%)"][
-                  index
-                ],
-                "transparent",
-              ],
+                "rgb(80%,25%,20%)",
+                "rgb(25%,80%,25%)",
+                "rgb(25%,25%,80%)",
+              ][index],
             },
           });
 
@@ -245,10 +242,25 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
             }).geometry.coordinates,
           }));
 
-          const animateRoute = async () => {
-            const isFirstLoop =
-              animateCounter * chunkSize < featureCollection.features.length;
+          miles.forEach((mile) => {
+            const mileMarkerElement = document.createElement("div");
+            mileMarkerElement.textContent = `${mile.mile}`;
+            mileMarkerElement.style.fontSize = "16px";
+            mileMarkerElement.style.fontFamily =
+              "-apple-system, BlinkMacSystemFont, sans-serif";
+            mileMarkerElement.style.color = "rgba(38,41,46,0.66)";
+            mileMarkerElement.style.fontWeight = "500";
+            mileMarkerElement.style.textShadow =
+              "-1.5px -1.5px 1.5px rgba(247,248,250,0.66), 1.5px -1.5px 1.5px rgba(247,248,250,0.66), -1.5px  1.5px 1.5px rgba(247,248,250,0.66), 1.5px  1.5px 1.5px rgba(247,248,250,0.66)";
 
+            new maplibreGl.Marker({
+              element: mileMarkerElement,
+            })
+              .setLngLat(mile.coordinates as [number, number])
+              .addTo(mapInstance);
+          });
+
+          const animateRoute = async () => {
             const startIndex = getChunkFeaturesStartIndex(animateCounter);
 
             const chunkFeatures = getChunkFeatures(startIndex);
@@ -259,43 +271,6 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
 
             const lastChunkFeatures = getChunkFeatures(lastChunkStartIndex);
 
-            if (isFirstLoop) {
-              chunkFeatures.forEach((feature) => {
-                mapInstance.setFeatureState(
-                  {
-                    source: routeSourceName,
-                    id: feature.id,
-                  },
-                  { drawn: true },
-                );
-              });
-
-              miles
-                .filter(
-                  (mile) =>
-                    mile.meters > chunkFeatures[0].properties?.startDistance &&
-                    mile.meters <=
-                      chunkFeatures.reverse()[0].properties?.endDistance,
-                )
-                .forEach((mile) => {
-                  const mileMarkerElement = document.createElement("div");
-                  mileMarkerElement.textContent = `${mile.mile}`;
-                  mileMarkerElement.style.fontSize = "16px";
-                  mileMarkerElement.style.fontFamily =
-                    "-apple-system, BlinkMacSystemFont, sans-serif";
-                  mileMarkerElement.style.color = "rgba(38,41,46,0.66)";
-                  mileMarkerElement.style.fontWeight = "500";
-                  mileMarkerElement.style.textShadow =
-                    "-1.5px -1.5px 1.5px rgba(247,248,250,0.66), 1.5px -1.5px 1.5px rgba(247,248,250,0.66), -1.5px  1.5px 1.5px rgba(247,248,250,0.66), 1.5px  1.5px 1.5px rgba(247,248,250,0.66)";
-
-                  new maplibreGl.Marker({
-                    element: mileMarkerElement,
-                  })
-                    .setLngLat(mile.coordinates as [number, number])
-                    .addTo(mapInstance);
-                });
-            }
-
             lastChunkFeatures.forEach((feature) => {
               mapInstance.setFeatureState(
                 {
@@ -305,10 +280,6 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
                 { drawn: false },
               );
             });
-
-            if (startIndex < lastChunkStartIndex) {
-              await new Promise((resolve) => setTimeout(resolve, 1000 * 2));
-            }
 
             chunkFeatures.forEach((feature) => {
               mapInstance.setFeatureState(
