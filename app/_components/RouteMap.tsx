@@ -41,8 +41,8 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
           routeData.map((route) => turf.point(route.coordinates[0])),
         ),
       ).geometry.coordinates as [number, number],
-      zoom: maxZoom,
       minZoom,
+      zoom: maxZoom,
       attributionControl: false,
       localIdeographFontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
       // hash: true,
@@ -172,7 +172,6 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
           {
             padding: controlMargin + controlSize + controlMargin,
             maxZoom,
-            // minZoom: 13,
           },
         );
       });
