@@ -49,7 +49,7 @@ export const generateMetadata = async ({ searchParams }: HomePageProps) => {
 
   return {
     openGraph: {
-      images: [`/api/og?r=${resolvedParams.r}`],
+      images: [`/api/opengraph-image?r=${resolvedParams.r}`],
     },
   };
 };
