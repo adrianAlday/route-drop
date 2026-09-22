@@ -36,13 +36,11 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
 
     const mapInstance = new maplibreGl.Map({
       container: mapContainerId,
-      center: turf
-        .centerMean(
-          turf.featureCollection(
-            routeData.map((route) => turf.point(route.coordinates[0])),
-          ),
-        )
-        .geometry.coordinates.reverse() as [number, number],
+      center: turf.centerMean(
+        turf.featureCollection(
+          routeData.map((route) => turf.point(route.coordinates[0])),
+        ),
+      ).geometry.coordinates as [number, number],
       zoom,
       minZoom,
       attributionControl: false,
