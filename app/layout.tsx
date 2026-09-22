@@ -1,5 +1,5 @@
-import LoadingWrapper from "./_components/LoadingWrapper";
 import "./globals.css";
+import LoadingWrapper from "./_components/LoadingWrapper";
 
 const Layout = ({ children }: LayoutProps<"/">) => {
   return (
