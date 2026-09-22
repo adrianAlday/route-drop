@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { getRoute } from "@/app/page";
+import { getData } from "@/app/_utils/getData";
 import { Route } from "@/app/_components/RouteMap";
 import { darkBlue, lightGray, routeColors } from "@/app/_utils/colors";
 import { ImageResponse } from "next/og";
@@ -32,21 +32,12 @@ export const revalidate = 3600;
 
 export const GET = async (request: NextRequest) => {
   try {
-    const { searchParams } = new URL(request.url);
-
-    const r = searchParams.get("r");
-
     const title = "route drop";
 
-    const lines = (
-      (r
-        ? await Promise.all(
-            r.split(",").map((routeId: string) => getRoute(routeId)),
-          )
-        : []) as Route[]
-    )
-      .sort((a, b) => b.stats.distance - a.stats.distance)
-      .map((route) => route.title);
+    const { searchParams } = new URL(request.url);
+    const lines = (await getData({ r: searchParams.get("r") as string })).map(
+      (route: Route) => route.title,
+    ) as string[];
 
     const name = "Montserrat";
     const style = "italic";
