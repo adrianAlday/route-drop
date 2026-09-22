@@ -59,7 +59,7 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
 
     mapInstance.addControl(geolocateControl, "bottom-right");
 
-    mapInstance.on("load", () => {
+    mapInstance.once("load", () => {
       mapInstance.setProjection({
         type: "globe",
       });
@@ -153,47 +153,45 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
           });
       });
 
+      mapInstance.resize();
+
       const boundingBox = turf.bbox(
         turf.featureCollection(routeData.map((route) => route.lineString)),
       );
 
       const controlMargin = 10;
+      const controlSize = 30;
 
-      mapInstance.jumpTo(
-        mapInstance.cameraForBounds(
+      mapInstance.once("idle", () => {
+        mapInstance.fitBounds(
           [
             [boundingBox[0], boundingBox[1]],
             [boundingBox[2], boundingBox[3]],
           ],
           {
-            padding: {
-              top: controlMargin,
-              bottom: controlMargin,
-              left: controlMargin,
-              right: controlMargin + 30 + controlMargin,
-            },
+            padding: controlMargin + controlSize + controlMargin,
             maxZoom,
           },
-        ) as maplibreGl.CenterZoomBearing,
-      );
+        );
 
-      setLoading(false);
+        setLoading(false);
+      });
     });
-  }, [routeData]);
+  }, []);
 
   return (
     <div className="w-dvw">
       <Bouncer classNames={loading ? "block" : "hidden"} />
 
-      <style>
-        {`
+      <div className={`${loading ? "hidden" : "block"}`}>
+        <div id={mapContainerId} className={"h-dvh"} />
+
+        <style>
+          {`
           .marker {
             -webkit-text-stroke: 1px ${darkBlue}
         `}
-      </style>
-
-      <div className={`${loading ? "hidden" : "block"}`}>
-        <div id={mapContainerId} className={"h-dvh"} />
+        </style>
       </div>
     </div>
   );
