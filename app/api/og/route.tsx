@@ -1,27 +1,34 @@
-// app/api/og/route.tsx
+import { NextRequest } from "next/server";
+import { getRoute } from "@/app/page";
 import { Route } from "@/app/_components/HomeMap";
 import { routeColors } from "@/app/_utils/colors";
-import { getRoute } from "@/app/page";
 import { ImageResponse } from "next/og";
-import { NextRequest } from "next/server";
 
-export const revalidate = 3600;
-
-const loadGoogleFont = async (font: string, weight: number, text: string) => {
-  const url = `https://fonts.googleapis.com/css2?family=${font}:ital,wght@1,${weight}&text=${encodeURIComponent(text)}`;
-
-  const css = await fetch(url).then((res) => res.text());
-
-  const match = css.match(/url\((https:\/\/fonts\.gstatic\.com\/[^)]+)\)/);
+const loadGoogleFont = async ({
+  name,
+  style,
+  weight,
+  text,
+}: {
+  name: string;
+  style: string;
+  weight: number;
+  text: string;
+}) => {
+  const match = (
+    await fetch(
+      `https://fonts.googleapis.com/css2?family=${name}:${style === "italic" ? "ital,wght@1," : "wght@"}${weight}&text=${encodeURIComponent(text)}`,
+    ).then((res) => res.text())
+  ).match(/url\((https:\/\/fonts\.gstatic\.com\/[^)]+)\)/);
 
   if (!match || !match[1]) {
     throw new Error("Font not found");
   }
 
-  const fontUrl = match[1];
-
-  return fetch(fontUrl).then((res) => res.arrayBuffer());
+  return fetch(match[1]).then((res) => res.arrayBuffer());
 };
+
+export const revalidate = 3600;
 
 export const GET = async (request: NextRequest) => {
   try {
@@ -41,13 +48,15 @@ export const GET = async (request: NextRequest) => {
       .sort((a, b) => b.stats.distance - a.stats.distance)
       .map((route) => route.title);
 
-    const montserratBold = await loadGoogleFont(
-      "Montserrat",
-      900,
-      [title, ...lines].join(`\n`),
-    );
-
-    console.log("routeColors", routeColors);
+    const name = "Montserrat";
+    const style = "italic";
+    const weight = 900;
+    const data = await loadGoogleFont({
+      name,
+      style,
+      weight,
+      text: [title, ...lines].join(`\n`),
+    });
 
     return new ImageResponse(
       <div
@@ -60,8 +69,8 @@ export const GET = async (request: NextRequest) => {
           justifyContent: "center",
           alignItems: "center",
           fontFamily: "Montserrat",
-          whiteSpace: "pre-wrap",
           letterSpacing: "-0.04em",
+          whiteSpace: "pre-wrap",
         }}
       >
         <div
@@ -84,20 +93,23 @@ export const GET = async (request: NextRequest) => {
           ))}
         </div>
       </div>,
+
       {
         width: 1200,
         height: 630,
         fonts: [
           {
-            name: "Montserrat",
-            data: montserratBold,
-            style: "italic",
-            weight: 900,
+            name,
+            style,
+            weight,
+            data,
           },
         ],
       },
     );
-  } catch (e) {
-    return new Response("Failed to generate OG image", { status: 500 });
+  } catch (error) {
+    return new Response(`Failed to generate OG image: ${error}`, {
+      status: 500,
+    });
   }
 };
