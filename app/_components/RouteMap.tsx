@@ -20,11 +20,11 @@ export type Route = {
   lineString: Feature<LineString>;
 };
 
-type HomeMapProps = {
+type RouteMapProps = {
   routeData: Route[];
 };
 
-const HomeMap = ({ routeData }: HomeMapProps) => {
+const RouteMap = ({ routeData }: RouteMapProps) => {
   const [loading, setLoading] = useState(true);
 
   const mapContainerId = "map";
@@ -201,4 +201,4 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
   );
 };
 
-export default HomeMap;
+export default RouteMap;

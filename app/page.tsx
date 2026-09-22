@@ -1,7 +1,7 @@
 import { Params } from "./_utils/types";
 import { decode } from "@googlemaps/polyline-codec";
 import * as turf from "@turf/turf";
-import HomeMap, { Route } from "./_components/HomeMap";
+import HomeMap, { Route } from "./_components/RouteMap";
 import Builder from "./_components/Builder";
 
 export const getRoute = async (id: string) =>

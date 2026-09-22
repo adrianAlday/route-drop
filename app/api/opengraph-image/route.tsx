@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { getRoute } from "@/app/page";
-import { Route } from "@/app/_components/HomeMap";
+import { Route } from "@/app/_components/RouteMap";
 import { darkBlue, lightGray, routeColors } from "@/app/_utils/colors";
 import { ImageResponse } from "next/og";
 
