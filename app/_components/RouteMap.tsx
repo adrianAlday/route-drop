@@ -3,7 +3,7 @@
 import { LatLngTuple } from "@googlemaps/polyline-codec";
 import type { Feature, LineString } from "geojson";
 import { useState, useEffect } from "react";
-import { getById, zoom, minZoom, setupMap, maxZoom } from "../_utils/map";
+import { getById, minZoom, maxZoom, setupMap } from "../_utils/map";
 import * as maplibreGl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import * as turf from "@turf/turf";
@@ -41,7 +41,7 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
           routeData.map((route) => turf.point(route.coordinates[0])),
         ),
       ).geometry.coordinates as [number, number],
-      zoom,
+      zoom: maxZoom,
       minZoom,
       attributionControl: false,
       localIdeographFontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
