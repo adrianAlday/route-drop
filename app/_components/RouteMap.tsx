@@ -154,32 +154,28 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
           });
       });
 
-      mapInstance.once("idle", () => {
-        mapInstance.resize();
+      mapInstance.resize();
 
-        const boundingBox = turf.bbox(
-          turf.featureCollection(routeData.map((route) => route.lineString)),
-        );
+      const boundingBox = turf.bbox(
+        turf.featureCollection(routeData.map((route) => route.lineString)),
+      );
 
-        const controlMargin = 10;
-        const controlSize = 30;
+      const controlMargin = 10;
+      const controlSize = 30;
 
-        mapInstance.once("idle", () => {
-          mapInstance.fitBounds(
-            [
-              [boundingBox[0], boundingBox[1]],
-              [boundingBox[2], boundingBox[3]],
-            ],
-            {
-              padding: controlMargin + controlSize + controlMargin,
-              maxZoom,
-              minZoom: 13,
-            },
-          );
+      mapInstance.fitBounds(
+        [
+          [boundingBox[0], boundingBox[1]],
+          [boundingBox[2], boundingBox[3]],
+        ],
+        {
+          padding: controlMargin + controlSize + controlMargin,
+          maxZoom,
+          // minZoom: 13,
+        },
+      );
 
-          setLoading(false);
-        });
-      });
+      setLoading(false);
     });
   }, []);
 
