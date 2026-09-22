@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import Bouncer from "./Bouncer";
+import { lightGray } from "../_utils/colors";
 
 type LoadingWrapperProps = {
   children: React.ReactNode;
@@ -14,7 +15,7 @@ const LoadingWrapper = ({ children }: LoadingWrapperProps) => (
         {
           // more data needed to display on mobile
         }
-        <div className="text-[rgb(242,243,240)]">
+        <div style={{ color: lightGray }}>
           There{"'"}s a wise saying that goes like this: A real gentleman never
           discusses women he{"'"}s broken up with or how much tax he{"'"}s paid.
           Actually, this is a total lie. I just made it up. Sorry! But if there

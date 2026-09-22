@@ -1,15 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Bouncer from "./Bouncer";
 import { LatLngTuple } from "@googlemaps/polyline-codec";
-import { getById, zoom, minZoom, maxZoom, setupMap } from "../_utils/map";
+import type { Feature, LineString } from "geojson";
+import { useState, useEffect } from "react";
+import { getById, zoom, minZoom, setupMap, maxZoom } from "../_utils/map";
 import * as maplibreGl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import * as turf from "@turf/turf";
-import { centerMean, featureCollection, point } from "@turf/turf";
-import type { Feature, LineString } from "geojson";
-import { routeColors } from "../_utils/colors";
+import { darkBlue, lightGray, routeColors } from "../_utils/colors";
+import Bouncer from "./Bouncer";
 
 export type Route = {
   id: string;
@@ -37,11 +36,13 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
 
     const mapInstance = new maplibreGl.Map({
       container: mapContainerId,
-      center: centerMean(
-        featureCollection(
-          routeData.map((route) => point(route.coordinates[0])),
-        ),
-      ).geometry.coordinates.reverse() as [number, number],
+      center: turf
+        .centerMean(
+          turf.featureCollection(
+            routeData.map((route) => turf.point(route.coordinates[0])),
+          ),
+        )
+        .geometry.coordinates.reverse() as [number, number],
       zoom,
       minZoom,
       attributionControl: false,
@@ -66,42 +67,43 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
       });
 
       routeData.forEach((route, index) => {
-        const routeSourceName = `routeSource ${route.id}`;
+        const routeSourceName = `routeSource-${route.id}`;
 
         mapInstance.addSource(routeSourceName, {
           type: "geojson",
           data: route.lineString,
         });
 
-        mapInstance.addLayer({
-          source: routeSourceName,
-          id: `routeLayer ${route.id} shadow`,
+        const routeLayerOptions = {
           type: "line",
           layout: {
             "line-join": "round",
             "line-cap": "round",
           },
+        };
+
+        mapInstance.addLayer({
+          source: routeSourceName,
+          id: `routeLayer-${route.id}-shadow`,
           paint: {
             "line-width": 4,
-            "line-color": "rgb(1,8,43)",
+            "line-color": darkBlue,
           },
-        });
+          ...routeLayerOptions,
+        } as maplibreGl.AddLayerObject);
 
         const routeColor = routeColors[index];
 
         mapInstance.addLayer({
           source: routeSourceName,
-          id: `routeLayer ${route.id}`,
-          type: "line",
-          layout: {
-            "line-join": "round",
-            "line-cap": "round",
-          },
+          id: `routeLayer-${route.id}`,
+
           paint: {
             "line-width": 2,
             "line-color": routeColor,
           },
-        });
+          ...routeLayerOptions,
+        } as maplibreGl.AddLayerObject);
 
         Array.from(
           {
@@ -116,7 +118,7 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
                 ),
               ) + 1,
           },
-          (_, index) => index,
+          (_value, index) => index,
         )
           .map((mile) => ({
             miles: mile,
@@ -130,15 +132,19 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
 
             const mileMarkerElement = document.createElement("div");
             mileMarkerElement.textContent = isStart ? "★" : `${marker.miles}`;
+            mileMarkerElement.style.color = isStart ? darkBlue : routeColor;
             mileMarkerElement.style.fontSize = "16px";
             mileMarkerElement.style.fontFamily =
               "-apple-system, BlinkMacSystemFont, sans-serif";
-            mileMarkerElement.style.color = isStart
-              ? "rgb(1,8,43)"
-              : routeColor;
             mileMarkerElement.style.fontWeight = "1000";
-            mileMarkerElement.style.textShadow =
-              "0 0 1px rgb(247,248,250), 0 0 2px rgb(247,248,250), 0 0 3px rgb(247,248,250), 0 0 4px rgb(247,248,250)";
+            mileMarkerElement.style.textShadow = Array.from(
+              {
+                length: 8,
+              },
+              (_value, index) => index + 1,
+            )
+              .map((number) => `0 0 ${number}px ${lightGray}`)
+              .join(", ");
             mileMarkerElement.className = "marker";
 
             new maplibreGl.Marker({
@@ -153,6 +159,8 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
         turf.featureCollection(routeData.map((route) => route.lineString)),
       );
 
+      const controlMargin = 10;
+
       mapInstance.jumpTo(
         mapInstance.cameraForBounds(
           [
@@ -160,7 +168,12 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
             [boundingBox[2], boundingBox[3]],
           ],
           {
-            padding: { top: 16, bottom: 16, left: 16, right: 16 + 32 + 16 },
+            padding: {
+              top: controlMargin,
+              bottom: controlMargin,
+              left: controlMargin,
+              right: controlMargin + 30 + controlMargin,
+            },
             maxZoom,
           },
         ) as maplibreGl.CenterZoomBearing,
@@ -177,10 +190,11 @@ const HomeMap = ({ routeData }: HomeMapProps) => {
       <style>
         {`
           .marker {
-            -webkit-text-stroke: 1px rgb(1,8,43);
+            -webkit-text-stroke: 1px ${darkBlue}
         `}
       </style>
-      <div className={`${loading ? "hidden" : "block"} relative`}>
+
+      <div className={`${loading ? "hidden" : "block"}`}>
         <div id={mapContainerId} className={"h-dvh"} />
       </div>
     </div>

@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { getRoute } from "@/app/page";
 import { Route } from "@/app/_components/HomeMap";
-import { routeColors } from "@/app/_utils/colors";
+import { darkBlue, lightGray, routeColors } from "@/app/_utils/colors";
 import { ImageResponse } from "next/og";
 
 const loadGoogleFont = async ({
@@ -61,7 +61,7 @@ export const GET = async (request: NextRequest) => {
     return new ImageResponse(
       <div
         style={{
-          background: "rgb(1,8,43)",
+          background: darkBlue,
           width: "100%",
           height: "100%",
           display: "flex",
@@ -79,9 +79,7 @@ export const GET = async (request: NextRequest) => {
             flexDirection: "column",
           }}
         >
-          <div style={{ fontSize: 128, color: "rgb(242, 243, 240)" }}>
-            {title}
-          </div>
+          <div style={{ fontSize: 128, color: lightGray }}>{title}</div>
 
           {lines.map((line, index) => (
             <div

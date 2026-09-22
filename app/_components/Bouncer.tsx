@@ -1,10 +1,12 @@
+import { darkBlue } from "../_utils/colors";
+
 const Dot = ({
   animationDelay = "0s",
   backgroundColor = "rgb(234,57,128)",
 }) => (
   <div
-    className="rounded-full h-2 w-2 border border-1 border-[rgb(1,8,43)] animate-bounce"
-    style={{ animationDelay, backgroundColor }}
+    className="rounded-full h-2 w-2 border border-1  animate-bounce"
+    style={{ animationDelay, backgroundColor, borderColor: darkBlue }}
   />
 );
 

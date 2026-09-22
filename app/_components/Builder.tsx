@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState } from "react";
 import { redirect } from "next/navigation";
 import { URLPattern } from "urlpattern-polyfill";
+import { darkBlue } from "../_utils/colors";
 
 const Builder = () => {
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -52,8 +53,9 @@ const Builder = () => {
         onChange={handleInputChange}
         enterKeyHint={"enter"}
         className={
-          "border border-2 border-[rgb(1,8,43)] focus:border-[rgb(234,57,128)] rounded-md w-full p-3 resize-none text-[rgb(1,8,43)] transition-all duration-80 transition-discrete"
+          "border border-2 focus:border-[rgb(234,57,128)] rounded-md w-full p-3 resize-none transition-all duration-80 transition-discrete"
         }
+        style={{ borderColor: darkBlue, color: darkBlue }}
       />
 
       <div
