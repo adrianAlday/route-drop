@@ -1,7 +1,7 @@
-import { decode } from "@googlemaps/polyline-codec";
-import HomeMap, { Route } from "./_components/HomeMap";
 import { Params } from "./_utils/types";
+import { decode } from "@googlemaps/polyline-codec";
 import * as turf from "@turf/turf";
+import HomeMap, { Route } from "./_components/HomeMap";
 import Builder from "./_components/Builder";
 
 export const getRoute = async (id: string) =>
@@ -36,7 +36,6 @@ export const getRoute = async (id: string) =>
         lineString,
       };
     })
-
     .catch((error) => {
       console.error(`Route Error: ${error}`);
     });
@@ -76,5 +75,3 @@ const HomePage = async ({ searchParams }: HomePageProps) => {
 };
 
 export default HomePage;
-
-// encode param?
