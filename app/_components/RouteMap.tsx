@@ -45,6 +45,7 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
       minZoom,
       attributionControl: false,
       localIdeographFontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+      // hash: true,
     });
 
     setupMap(mapInstance);
@@ -172,6 +173,7 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
         {
           padding: controlMargin + controlSize + controlMargin,
           maxZoom,
+          minZoom: 12,
         },
       );
 
