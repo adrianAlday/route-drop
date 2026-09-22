@@ -153,31 +153,33 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
               .addTo(mapInstance);
           });
       });
-    });
 
-    mapInstance.resize();
+      mapInstance.once("idle", () => {
+        mapInstance.resize();
 
-    const boundingBox = turf.bbox(
-      turf.featureCollection(routeData.map((route) => route.lineString)),
-    );
+        const boundingBox = turf.bbox(
+          turf.featureCollection(routeData.map((route) => route.lineString)),
+        );
 
-    const controlMargin = 10;
-    const controlSize = 30;
+        const controlMargin = 10;
+        const controlSize = 30;
 
-    mapInstance.once("idle", () => {
-      mapInstance.fitBounds(
-        [
-          [boundingBox[0], boundingBox[1]],
-          [boundingBox[2], boundingBox[3]],
-        ],
-        {
-          padding: controlMargin + controlSize + controlMargin,
-          maxZoom,
-          minZoom: 12,
-        },
-      );
+        mapInstance.once("idle", () => {
+          mapInstance.fitBounds(
+            [
+              [boundingBox[0], boundingBox[1]],
+              [boundingBox[2], boundingBox[3]],
+            ],
+            {
+              padding: controlMargin + controlSize + controlMargin,
+              maxZoom,
+              minZoom: 13,
+            },
+          );
 
-      setLoading(false);
+          setLoading(false);
+        });
+      });
     });
   }, []);
 
@@ -185,7 +187,7 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
     <div className="w-dvw">
       <Bouncer classNames={loading ? "block" : "hidden"} />
 
-      <div className={`${loading ? "hidden" : "block"}`}>
+      <div className={`relative ${loading ? "hidden" : "block"}`}>
         <div id={mapContainerId} className={"h-dvh"} />
 
         <style>
