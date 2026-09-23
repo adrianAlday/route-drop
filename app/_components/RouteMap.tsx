@@ -3,7 +3,7 @@
 import { LatLngTuple } from "@googlemaps/polyline-codec";
 import type { Feature, LineString } from "geojson";
 import { useState, useEffect } from "react";
-import { getById, minZoom, maxZoom, setupMap } from "../_utils/map";
+import { getById, minZoom, maxZoom, setupMap, essential } from "../_utils/map";
 import * as maplibreGl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import * as turf from "@turf/turf";
@@ -172,6 +172,7 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
           {
             padding: controlMargin + controlSize + controlMargin,
             maxZoom,
+            essential,
           },
         );
       });

@@ -4,6 +4,8 @@ export const minZoom = 1; // zoom out limit
 
 export const maxZoom = 18; // zoom in limit
 
+export const essential = true;
+
 export const getById = (id: string) =>
   document.getElementById(id) as HTMLElement;
 
