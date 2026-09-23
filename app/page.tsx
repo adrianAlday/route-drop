@@ -12,7 +12,7 @@ export const generateMetadata = async ({ searchParams }: HomePageProps) => {
   const routeData = await getData(resolvedParams);
 
   return {
-    title: `Route Drop - ${routeData.map((route) => route.title).join(", ")}`,
+    title: `Route Drop ${routeData.length ? "-" : ""} ${routeData.map((route) => route.title).join(", ")}`,
     openGraph: {
       images: [`/api/opengraph-image?r=${resolvedParams.r}`],
     },
