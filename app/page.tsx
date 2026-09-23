@@ -31,3 +31,5 @@ const HomePage = async ({ searchParams }: HomePageProps) => {
 };
 
 export default HomePage;
+
+// favicon
