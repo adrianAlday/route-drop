@@ -38,6 +38,7 @@ const Builder = () => {
           inputValue
             .split(/[\s,]+/)
             .map((string) => pattern.exec(string)?.pathname.groups.routeId)
+            .filter(Boolean)
             .join(","),
       );
     }
