@@ -42,7 +42,7 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
         ),
       ).geometry.coordinates as [number, number],
       minZoom,
-      zoom: maxZoom,
+      zoom: 16,
       attributionControl: false,
       localIdeographFontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
       // hash: true,
