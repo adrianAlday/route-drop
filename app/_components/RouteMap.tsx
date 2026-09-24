@@ -182,9 +182,7 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
         );
       });
 
-      const setupOrientation = (
-        eventName: "deviceorientation" | "ondeviceorientationabsolute",
-      ) => {
+      const setupOrientationBeam = (eventName: string) => {
         const beamPositionWrapper = document.createElement("div");
         const beamRotationWrapper = document.createElement("div");
         beamRotationWrapper.className = "beam-rotation-wrapper";
@@ -215,15 +213,11 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
         });
 
         let lastOrientation = 0;
-        const orientationThrottleMilliseconds = 100;
 
         window.addEventListener(eventName, (event) => {
           const currentOrientation = event.timeStamp;
 
-          if (
-            currentOrientation - lastOrientation >
-            orientationThrottleMilliseconds
-          ) {
+          if (currentOrientation - lastOrientation > 200) {
             lastOrientation = currentOrientation;
 
             beamRotationWrapper.style.transform = `rotate(${360 - ((event as DeviceOrientationEvent).alpha || 0)}deg)`;
@@ -242,12 +236,11 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
             .requestPermission()
             .then((permissionState) => {
               if (permissionState === "granted") {
-                setupOrientation("deviceorientation");
+                setupOrientationBeam("deviceorientation");
               }
-            })
-            .catch(console.error);
+            });
         } else if ("ondeviceorientationabsolute" in window) {
-          setupOrientation("ondeviceorientationabsolute");
+          setupOrientationBeam("ondeviceorientationabsolute");
         }
       });
 
