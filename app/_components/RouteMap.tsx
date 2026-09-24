@@ -191,12 +191,15 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
       const geolocateButton = document.querySelector(
         ".maplibregl-ctrl-geolocate",
       ) as HTMLButtonElement;
+
+      const emptyLocationIcon = `<svg viewBox="0 0 25.8697 23.9915" xmlns="http://www.w3.org/2000/svg"><g><path d="M1.44169 9.20083C-0.831743 10.2321-0.286821 13.402 2.16826 13.4079L10.5061 13.4254C10.5882 13.4254 10.6116 13.4547 10.6116 13.5368L10.6233 21.8395C10.6292 24.3239 13.8226 24.8102 14.8772 22.4899L23.4612 3.78091C24.5979 1.27895 22.7054-0.537453 20.2093 0.605126ZM5.85966 10.5075C5.79521 10.5075 5.77763 10.4606 5.8538 10.4254L19.9046 4.03286C19.9925 3.9977 20.0511 4.01528 19.9983 4.13247L13.5823 18.1715C13.5589 18.2301 13.512 18.2125 13.512 18.154L13.553 11.9899C13.5589 10.9 13.1253 10.4606 12.0296 10.4665Z" fill="currentColor" /></g></svg>`;
+      const filledLocationIcon = `<svg viewBox="0 0 25.7941 23.9347" xmlns="http://www.w3.org/2000/svg"><g><path d="M2.13632 13.3502L10.4508 13.3677C10.568 13.3677 10.6148 13.4146 10.6148 13.5318L10.6266 21.8111C10.6266 24.2369 13.7555 24.7642 14.8101 22.4498L23.4 3.73493C24.5309 1.25055 22.6383-0.507262 20.1891 0.60602L1.42148 9.20172C-0.787507 10.2037-0.324616 13.3384 2.13632 13.3502Z" fill="currentColor" /></g></svg>`;
+
       const geolocateIcon = document.createElement("div");
+      geolocateIcon.style.borderRadius = "50%";
       geolocateIcon.style.padding = "12px";
       geolocateIcon.style.color = darkBlue;
-      geolocateIcon.style.border = `2px solid ${darkBlue}`;
-      geolocateIcon.style.borderRadius = "50%";
-      geolocateIcon.innerHTML = `<svg viewBox="0 0 25.7941 23.9347" xmlns="http://www.w3.org/2000/svg"><g><path d="M2.13632 13.3502L10.4508 13.3677C10.568 13.3677 10.6148 13.4146 10.6148 13.5318L10.6266 21.8111C10.6266 24.2369 13.7555 24.7642 14.8101 22.4498L23.4 3.73493C24.5309 1.25055 22.6383-0.507262 20.1891 0.60602L1.42148 9.20172C-0.787507 10.2037-0.324616 13.3384 2.13632 13.3502Z" fill="currentColor" /></g></svg>`;
+      geolocateIcon.innerHTML = emptyLocationIcon;
       geolocateButton.replaceChildren(geolocateIcon);
 
       const orientationBeamName = "orientation-beam";
@@ -245,8 +248,8 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
                 ),
               )
             ) {
+              geolocateIcon.innerHTML = emptyLocationIcon;
               geolocateIcon.style.color = darkBlue;
-              geolocateIcon.style.borderColor = darkBlue;
 
               orientationBeamMarker.setLngLat(defaultBeamLocation);
             }
@@ -265,8 +268,8 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
       };
 
       geolocateControl.on("trackuserlocationstart", () => {
+        geolocateIcon.innerHTML = filledLocationIcon;
         geolocateIcon.style.color = routeColors[0];
-        geolocateIcon.style.borderColor = routeColors[0];
 
         if (!getById(orientationBeamName)) {
           if (
@@ -312,7 +315,6 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
             }
             .maplibregl-ctrl-group {
               border-radius: 50%;
-              background: ${lightGray}
             }
             .maplibregl-ctrl-group button {
               height: 44px;
