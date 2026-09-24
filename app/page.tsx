@@ -31,7 +31,3 @@ const HomePage = async ({ searchParams }: HomePageProps) => {
 };
 
 export default HomePage;
-
-// once over
-// fit to whole map when turning off location?
-// end symbol?

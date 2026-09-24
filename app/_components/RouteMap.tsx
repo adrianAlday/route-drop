@@ -167,7 +167,7 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
 
       mapInstance.resize();
 
-      mapInstance.once("idle", () => {
+      const fitBounds = () => {
         const boundingBox = turf.bbox(
           turf.featureCollection(routeData.map((route) => route.lineString)),
         );
@@ -186,6 +186,10 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
             essential,
           },
         );
+      };
+
+      mapInstance.once("idle", () => {
+        fitBounds();
       });
 
       const geolocateButton = document.querySelector(
@@ -252,6 +256,8 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
               geolocateIcon.style.color = darkBlue;
 
               orientationBeamMarker.setLngLat(defaultBeamLocation);
+
+              fitBounds();
             }
           }
         }).observe(geolocateButton, { attributes: true });
