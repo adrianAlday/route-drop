@@ -34,7 +34,10 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
   const mapContainerId = "map";
 
   useEffect(() => {
-    if (!getById(mapContainerId)) {
+    if (
+      !getById(mapContainerId) ||
+      document.getElementsByClassName("maplibregl-canvas-container")[0]
+    ) {
       return;
     }
 
