@@ -284,9 +284,9 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
               height: ${orientationBeamSize / 2}px; 
               background: radial-gradient(
                 circle at 50% 100%, 
-                rgba(234,57,128,0.50) 00%, 
-                rgba(234,57,128,0.25) 50%, 
-                rgba(234,57,128,0.00) 75%
+                rgba(234,57,128,0.66) 00%, 
+                rgba(234,57,128,0.33) 33%, 
+                rgba(234,57,128,0.00) 66%
               );
               clip-path: polygon(50% 100%, 30% 0%, 70% 0%);
               transform: translate(-50%, -100%);
