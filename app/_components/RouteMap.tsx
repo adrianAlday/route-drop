@@ -56,6 +56,7 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
       },
       showUserLocation: true,
       showAccuracyCircle: true,
+      trackUserLocation: true,
     });
 
     mapInstance.addControl(geolocateControl, "bottom-right");
@@ -177,9 +178,47 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
         );
       });
 
+      if (window.DeviceOrientationEvent) {
+        const beamPositionWrapper = document.createElement("div");
+        const beamRotationWrapper = document.createElement("div");
+        beamRotationWrapper.className = "beam-rotation-wrapper";
+        const orientationBeam = document.createElement("div");
+        orientationBeam.className = "orientation-beam";
+
+        beamPositionWrapper
+          .appendChild(beamRotationWrapper)
+          .appendChild(orientationBeam);
+
+        const defaultBeamLocation = [0, 90] as [number, number];
+
+        const orientationBeamMarker = new maplibreGl.Marker({
+          element: beamPositionWrapper,
+        })
+          .setLngLat([0, 90])
+          .addTo(mapInstance);
+
+        geolocateControl.on("geolocate", (event) => {
+          orientationBeamMarker.setLngLat([
+            event.coords.longitude,
+            event.coords.latitude,
+          ]);
+        });
+
+        geolocateControl.on("trackuserlocationend", () => {
+          orientationBeamMarker.setLngLat(defaultBeamLocation);
+        });
+
+        window.addEventListener("deviceorientation", (event) => {
+          beamRotationWrapper.style.transform = `rotate(${360 - (event.alpha || 0)}deg)`;
+        });
+      }
+
       setLoading(false);
     });
   }, []);
+
+  const locationDotSize = 15;
+  const orientationBeamSize = locationDotSize * 8;
 
   return (
     <div className="w-dvw">
@@ -190,9 +229,27 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
 
         <style>
           {`
-          .marker {
-            -webkit-text-stroke: 1px ${darkBlue}
-        `}
+            .marker {
+              -webkit-text-stroke: 1px ${darkBlue};
+            }
+            .beam-rotation-wrapper {
+              width: 0px;
+              height: 0px; 
+              transition: transform 0.2s ease-out;
+            }
+            .orientation-beam {
+              width: ${orientationBeamSize}px;
+              height: ${orientationBeamSize / 2}px; 
+              background: radial-gradient(
+                circle at 50% 100%, 
+                rgba(29,161,242,0.50) 00%, 
+                rgba(29,161,242,0.25) 50%, 
+                rgba(29,161,242,0.00) 75%
+              );
+              clip-path: polygon(50% 100%, 30% 0%, 70% 0%);
+              transform: translate(-50%, -100%);
+            }
+          `}
         </style>
       </div>
     </div>
