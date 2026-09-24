@@ -178,7 +178,9 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
         );
       });
 
-      if (window.DeviceOrientationEvent) {
+      const setupOrientation = (
+        eventName: "deviceorientation" | "ondeviceorientationabsolute",
+      ) => {
         const beamPositionWrapper = document.createElement("div");
         const beamRotationWrapper = document.createElement("div");
         beamRotationWrapper.className = "beam-rotation-wrapper";
@@ -208,10 +210,37 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
           orientationBeamMarker.setLngLat(defaultBeamLocation);
         });
 
-        window.addEventListener("deviceorientation", (event) => {
-          beamRotationWrapper.style.transform = `rotate(${360 - (event.alpha || 0)}deg)`;
+        window.addEventListener(eventName, (event) => {
+          beamRotationWrapper.style.transform = `rotate(${360 - ((event as DeviceOrientationEvent).alpha || 0)}deg)`;
         });
-      }
+      };
+
+      geolocateControl.on("trackuserlocationstart", () => {
+        const isIos =
+          typeof DeviceOrientationEvent !== "undefined" &&
+          typeof (
+            DeviceOrientationEvent as unknown as DeviceOrientationEvent & {
+              requestPermission?: () => Promise<"granted" | "denied">;
+            }
+          ).requestPermission === "function";
+
+        if (isIos) {
+          (
+            DeviceOrientationEvent as unknown as DeviceOrientationEvent & {
+              requestPermission: () => Promise<"granted" | "denied">;
+            }
+          )
+            .requestPermission()
+            .then((permissionState) => {
+              if (permissionState === "granted") {
+                setupOrientation("deviceorientation");
+              }
+            })
+            .catch(console.error);
+        } else if ("ondeviceorientationabsolute" in window) {
+          setupOrientation("ondeviceorientationabsolute");
+        }
+      });
 
       setLoading(false);
     });
