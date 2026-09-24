@@ -139,11 +139,15 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
 
             const mileMarkerElement = document.createElement("div");
             mileMarkerElement.textContent = isStart ? "★" : `${marker.miles}`;
-            mileMarkerElement.style.color = isStart ? darkBlue : routeColor;
             mileMarkerElement.style.fontSize = "16px";
             mileMarkerElement.style.fontFamily =
               "-apple-system, BlinkMacSystemFont, sans-serif";
             mileMarkerElement.style.fontWeight = "1000";
+            mileMarkerElement.style.color = isStart ? darkBlue : routeColor;
+            mileMarkerElement.style.webkitTextStrokeWidth = "1px";
+            mileMarkerElement.style.webkitTextStrokeColor = isStart
+              ? routeColor
+              : darkBlue;
             mileMarkerElement.style.textShadow = Array.from(
               {
                 length: 8,
@@ -152,7 +156,6 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
             )
               .map((number) => `0 0 ${number}px ${lightGray}`)
               .join(", ");
-            mileMarkerElement.className = "marker";
 
             new maplibreGl.Marker({
               element: mileMarkerElement,
@@ -302,8 +305,6 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
 
         <style>
           {`
-            .marker {
-              -webkit-text-stroke: 1px ${darkBlue};
             }
             .maplibregl-ctrl-group:not(:empty) {
               box-shadow: none;

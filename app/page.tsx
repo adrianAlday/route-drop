@@ -33,5 +33,7 @@ const HomePage = async ({ searchParams }: HomePageProps) => {
 export default HomePage;
 
 // not filled in icon before doing location
-// border, background, and fill colors, active and not
+// sizing, spacing, border, background, and fill colors, active and not
 // once over
+// fit to whole map when turning off location?
+// end symbol?
