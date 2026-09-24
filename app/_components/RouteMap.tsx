@@ -298,6 +298,8 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
 
         <style>
           {`
+            .maplibregl-ctrl-bottom-right .maplibregl-ctrl {
+              margin: 0 16px 16px 0;
             }
             .maplibregl-ctrl-group:not(:empty) {
               box-shadow: none;
