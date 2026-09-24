@@ -265,8 +265,7 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
             }
             .beam-rotation-wrapper {
               width: 0px;
-              height: 0px; 
-              transition: transform 0.2s ease-out;
+              height: 0px;
             }
             .orientation-beam {
               width: ${orientationBeamSize}px;
