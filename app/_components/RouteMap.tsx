@@ -191,7 +191,13 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
       const geolocateButton = document.querySelector(
         ".maplibregl-ctrl-geolocate",
       ) as HTMLButtonElement;
-      geolocateButton.innerHTML = `<div id="geolocate-icon-wrapper" style="padding: 12px; color: ${darkBlue}; border: 2px solid ${darkBlue}; border-radius: 50%;"><svg viewBox="0 0 25.7941 23.9347" xmlns="http://www.w3.org/2000/svg"><g><path d="M2.13632 13.3502L10.4508 13.3677C10.568 13.3677 10.6148 13.4146 10.6148 13.5318L10.6266 21.8111C10.6266 24.2369 13.7555 24.7642 14.8101 22.4498L23.4 3.73493C24.5309 1.25055 22.6383-0.507262 20.1891 0.60602L1.42148 9.20172C-0.787507 10.2037-0.324616 13.3384 2.13632 13.3502Z" fill="currentColor" /></g></svg></div>`;
+      const geolocateIcon = document.createElement("div");
+      geolocateIcon.style.padding = "12px";
+      geolocateIcon.style.color = darkBlue;
+      geolocateIcon.style.border = `2px solid ${darkBlue}`;
+      geolocateIcon.style.borderRadius = "50%";
+      geolocateIcon.innerHTML = `<svg viewBox="0 0 25.7941 23.9347" xmlns="http://www.w3.org/2000/svg"><g><path d="M2.13632 13.3502L10.4508 13.3677C10.568 13.3677 10.6148 13.4146 10.6148 13.5318L10.6266 21.8111C10.6266 24.2369 13.7555 24.7642 14.8101 22.4498L23.4 3.73493C24.5309 1.25055 22.6383-0.507262 20.1891 0.60602L1.42148 9.20172C-0.787507 10.2037-0.324616 13.3384 2.13632 13.3502Z" fill="currentColor" /></g></svg>`;
+      geolocateButton.replaceChildren(geolocateIcon);
 
       const orientationBeamName = "orientation-beam";
 
@@ -239,8 +245,8 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
                 ),
               )
             ) {
-              getById("geolocate-icon-wrapper").style.color = darkBlue;
-              getById("geolocate-icon-wrapper").style.borderColor = darkBlue;
+              geolocateIcon.style.color = darkBlue;
+              geolocateIcon.style.borderColor = darkBlue;
 
               orientationBeamMarker.setLngLat(defaultBeamLocation);
             }
@@ -259,8 +265,8 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
       };
 
       geolocateControl.on("trackuserlocationstart", () => {
-        getById("geolocate-icon-wrapper").style.color = routeColors[0];
-        getById("geolocate-icon-wrapper").style.borderColor = routeColors[0];
+        geolocateIcon.style.color = routeColors[0];
+        geolocateIcon.style.borderColor = routeColors[0];
 
         if (!getById(orientationBeamName)) {
           if (
