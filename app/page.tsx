@@ -32,4 +32,6 @@ const HomePage = async ({ searchParams }: HomePageProps) => {
 
 export default HomePage;
 
-// favicon
+// not filled in icon before doing location
+// border, background, and fill colors, active and not
+// once over
