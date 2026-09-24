@@ -263,6 +263,15 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
             .marker {
               -webkit-text-stroke: 1px ${darkBlue};
             }
+            .maplibregl-user-location-dot, .maplibregl-user-location-dot:before {
+              background-color: ${routeColors[0]};
+            }
+            .maplibregl-user-location-dot:after {
+              border: 2px solid ${darkBlue};
+            }
+            .maplibregl-user-location-accuracy-circle {
+              background-color: rgba(234,57,128,0.33);
+            }
             .beam-rotation-wrapper {
               width: 0px;
               height: 0px;
@@ -272,9 +281,9 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
               height: ${orientationBeamSize / 2}px; 
               background: radial-gradient(
                 circle at 50% 100%, 
-                rgba(29,161,242,0.50) 00%, 
-                rgba(29,161,242,0.25) 50%, 
-                rgba(29,161,242,0.00) 75%
+                rgba(234,57,128,0.50) 00%, 
+                rgba(234,57,128,0.25) 50%, 
+                rgba(234,57,128,0.00) 75%
               );
               clip-path: polygon(50% 100%, 30% 0%, 70% 0%);
               transform: translate(-50%, -100%);
