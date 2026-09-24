@@ -207,11 +207,15 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
           .setLngLat([0, 90])
           .addTo(mapInstance);
 
+        let lastOrientation = 0;
+
         geolocateControl.on("geolocate", (event) => {
-          orientationBeamMarker.setLngLat([
-            event.coords.longitude,
-            event.coords.latitude,
-          ]);
+          if (lastOrientation !== 0) {
+            orientationBeamMarker.setLngLat([
+              event.coords.longitude,
+              event.coords.latitude,
+            ]);
+          }
         });
 
         new MutationObserver((mutationsList) => {
@@ -236,8 +240,6 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
           ) as HTMLButtonElement,
           { attributes: true },
         );
-
-        let lastOrientation = 0;
 
         window.addEventListener(eventName, (event) => {
           const currentOrientation = event.timeStamp;
