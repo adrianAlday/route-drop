@@ -217,7 +217,7 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
         window.addEventListener(eventName, (event) => {
           const currentOrientation = event.timeStamp;
 
-          if (currentOrientation - lastOrientation > 200) {
+          if (currentOrientation - lastOrientation > 1000 / 60) {
             lastOrientation = currentOrientation;
 
             beamRotationWrapper.style.transform = `rotate(${360 - ((event as DeviceOrientationEvent).alpha || 0)}deg)`;
