@@ -185,12 +185,15 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
         );
       });
 
+      const orientationBeamName = "orientation-beam";
+
       const setupOrientationBeam = (eventName: string) => {
         const beamPositionWrapper = document.createElement("div");
         const beamRotationWrapper = document.createElement("div");
         beamRotationWrapper.className = "beam-rotation-wrapper";
         const orientationBeam = document.createElement("div");
-        orientationBeam.className = "orientation-beam";
+        orientationBeam.className = orientationBeamName;
+        orientationBeam.id = orientationBeamName;
 
         beamPositionWrapper
           .appendChild(beamRotationWrapper)
@@ -211,9 +214,28 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
           ]);
         });
 
-        geolocateControl.on("trackuserlocationend", () => {
-          orientationBeamMarker.setLngLat(defaultBeamLocation);
-        });
+        new MutationObserver((mutationsList) => {
+          for (const mutation of mutationsList) {
+            if (
+              mutation.attributeName === "class" &&
+              ![
+                "maplibregl-ctrl-geolocate-active",
+                "maplibregl-ctrl-geolocate-background",
+              ].some((className) =>
+                (mutation.target as HTMLButtonElement).className.includes(
+                  className,
+                ),
+              )
+            ) {
+              orientationBeamMarker.setLngLat(defaultBeamLocation);
+            }
+          }
+        }).observe(
+          document.querySelector(
+            ".maplibregl-ctrl-geolocate",
+          ) as HTMLButtonElement,
+          { attributes: true },
+        );
 
         let lastOrientation = 0;
 
@@ -229,21 +251,23 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
       };
 
       geolocateControl.on("trackuserlocationstart", () => {
-        if (
-          typeof DeviceOrientationEvent !== "undefined" &&
-          typeof (
-            DeviceOrientationEvent as unknown as FixedDeviceOrientationEvent
-          ).requestPermission === "function"
-        ) {
-          (DeviceOrientationEvent as unknown as FixedDeviceOrientationEvent)
-            .requestPermission()
-            .then((permissionState) => {
-              if (permissionState === "granted") {
-                setupOrientationBeam("deviceorientation");
-              }
-            });
-        } else if ("ondeviceorientationabsolute" in window) {
-          setupOrientationBeam("ondeviceorientationabsolute");
+        if (!getById(orientationBeamName)) {
+          if (
+            typeof DeviceOrientationEvent !== "undefined" &&
+            typeof (
+              DeviceOrientationEvent as unknown as FixedDeviceOrientationEvent
+            ).requestPermission === "function"
+          ) {
+            (DeviceOrientationEvent as unknown as FixedDeviceOrientationEvent)
+              .requestPermission()
+              .then((permissionState) => {
+                if (permissionState === "granted") {
+                  setupOrientationBeam("deviceorientation");
+                }
+              });
+          } else if ("ondeviceorientationabsolute" in window) {
+            setupOrientationBeam("ondeviceorientationabsolute");
+          }
         }
       });
 
