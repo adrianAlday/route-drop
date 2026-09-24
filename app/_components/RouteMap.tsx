@@ -20,6 +20,10 @@ export type Route = {
   lineString: Feature<LineString>;
 };
 
+type FixedDeviceOrientationEvent = DeviceOrientationEvent & {
+  requestPermission: () => Promise<"granted" | "denied">;
+};
+
 type RouteMapProps = {
   routeData: Route[];
 };
@@ -210,26 +214,31 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
           orientationBeamMarker.setLngLat(defaultBeamLocation);
         });
 
+        let lastOrientation = 0;
+        const orientationThrottleMilliseconds = 100;
+
         window.addEventListener(eventName, (event) => {
-          beamRotationWrapper.style.transform = `rotate(${360 - ((event as DeviceOrientationEvent).alpha || 0)}deg)`;
+          const currentOrientation = event.timeStamp;
+
+          if (
+            currentOrientation - lastOrientation >
+            orientationThrottleMilliseconds
+          ) {
+            lastOrientation = currentOrientation;
+
+            beamRotationWrapper.style.transform = `rotate(${360 - ((event as DeviceOrientationEvent).alpha || 0)}deg)`;
+          }
         });
       };
 
       geolocateControl.on("trackuserlocationstart", () => {
-        const isIos =
+        if (
           typeof DeviceOrientationEvent !== "undefined" &&
           typeof (
-            DeviceOrientationEvent as unknown as DeviceOrientationEvent & {
-              requestPermission?: () => Promise<"granted" | "denied">;
-            }
-          ).requestPermission === "function";
-
-        if (isIos) {
-          (
-            DeviceOrientationEvent as unknown as DeviceOrientationEvent & {
-              requestPermission: () => Promise<"granted" | "denied">;
-            }
-          )
+            DeviceOrientationEvent as unknown as FixedDeviceOrientationEvent
+          ).requestPermission === "function"
+        ) {
+          (DeviceOrientationEvent as unknown as FixedDeviceOrientationEvent)
             .requestPermission()
             .then((permissionState) => {
               if (permissionState === "granted") {
