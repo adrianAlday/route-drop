@@ -272,7 +272,16 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
           if (currentOrientation - lastDeviceOrientationTime > 1000 / 60) {
             lastDeviceOrientationTime = currentOrientation;
 
-            beamRotationWrapper.style.transform = `rotate(${360 - ((event as DeviceOrientationEvent).alpha || 0)}deg)`;
+            beamRotationWrapper.style.transform = `rotate(${
+              360 -
+              ((
+                event as DeviceOrientationEvent & {
+                  webkitCompassHeading: number;
+                }
+              ).webkitCompassHeading ||
+                (event as DeviceOrientationEvent).alpha ||
+                0)
+            }deg)`;
           }
         });
       };
