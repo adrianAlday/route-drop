@@ -36,7 +36,7 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
   useEffect(() => {
     if (
       !getById(mapContainerId) ||
-      document.getElementsByClassName("maplibregl-canvas-container")[0]
+      document.querySelector(".maplibregl-canvas-container")
     ) {
       return;
     }
@@ -188,6 +188,7 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
         showUserLocation: true,
         showAccuracyCircle: true,
         trackUserLocation: true,
+        fitBoundsOptions: { essential, maxZoom: 16 },
       });
 
       mapInstance.addControl(geolocateControl, "bottom-right");
