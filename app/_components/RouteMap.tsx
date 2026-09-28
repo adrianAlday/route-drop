@@ -218,14 +218,13 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
         const orientationBeamSize = locationDotSize * 8;
         orientationBeam.style.width = `${orientationBeamSize}px`;
         orientationBeam.style.height = `${orientationBeamSize / 2}px`;
+        orientationBeam.style.opacity = "0";
         orientationBeam.className = orientationBeamId;
         orientationBeam.id = orientationBeamId;
 
         beamPositionWrapper
           .appendChild(beamRotationWrapper)
           .appendChild(orientationBeam);
-
-        const defaultBeamLocation = [0, 90] as [number, number];
 
         const orientationBeamMarker = new maplibreGl.Marker({
           element: beamPositionWrapper,
@@ -241,6 +240,10 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
               event.coords.longitude,
               event.coords.latitude,
             ]);
+
+            if (orientationBeam.style.opacity === "0") {
+              orientationBeam.style.opacity = "100";
+            }
           }
         });
 
@@ -262,7 +265,7 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
               if (isFullyHalted) {
                 geolocateIcon.style.color = darkBlue;
 
-                orientationBeamMarker.setLngLat(defaultBeamLocation);
+                orientationBeam.style.opacity = "0";
 
                 fitBounds();
               }
