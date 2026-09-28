@@ -7,7 +7,7 @@ import { getById, minZoom, maxZoom, setupMap, essential } from "../_utils/map";
 import * as maplibreGl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import * as turf from "@turf/turf";
-import { darkBlue, lightGray, routeColors } from "../_utils/colors";
+import { darkBlue, lightGray, pinkRgb, routeColors } from "../_utils/colors";
 import Bouncer from "./Bouncer";
 
 export type Route = {
@@ -218,8 +218,14 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
         const orientationBeamSize = locationDotSize * 8;
         orientationBeam.style.width = `${orientationBeamSize}px`;
         orientationBeam.style.height = `${orientationBeamSize / 2}px`;
+        orientationBeam.style.background = `radial-gradient(circle at 50% 100%, 
+          rgba(${pinkRgb},0.66) 00%, 
+          rgba(${pinkRgb},0.33) 33%, 
+          rgba(${pinkRgb},0.00) 66%
+        )`;
+        orientationBeam.style.clipPath = "polygon(50% 100%, 30% 0%, 70% 0%)";
+        orientationBeam.style.transform = "translate(-50%, -100%)";
         orientationBeam.style.opacity = "0";
-        orientationBeam.className = orientationBeamId;
         orientationBeam.id = orientationBeamId;
 
         beamPositionWrapper
@@ -360,17 +366,7 @@ const RouteMap = ({ routeData }: RouteMapProps) => {
               width: 17px;
             }
             .maplibregl-user-location-accuracy-circle {
-              background-color: rgba(234,57,128,0.33);
-            }
-            .orientation-beam {
-              background: radial-gradient(
-                circle at 50% 100%, 
-                rgba(234,57,128,0.66) 00%, 
-                rgba(234,57,128,0.33) 33%, 
-                rgba(234,57,128,0.00) 66%
-              );
-              clip-path: polygon(50% 100%, 30% 0%, 70% 0%);
-              transform: translate(-50%, -100%);
+              background-color: rgba(${pinkRgb},0.33);
             }
           `}
         </style>
