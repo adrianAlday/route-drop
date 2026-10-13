@@ -2,6 +2,8 @@ import { Params } from "./_utils/types";
 import RouteMap from "./_components/RouteMap";
 import Builder from "./_components/Builder";
 import { getData } from "./_utils/getData";
+import { events } from "./_utils/events";
+import { routeColors } from "./_utils/colors";
 
 type HomePageProps = {
   searchParams: Promise<Params>;
@@ -25,7 +27,18 @@ const HomePage = async ({ searchParams }: HomePageProps) => {
 
   return (
     <main>
-      {routeData.length ? <RouteMap routeData={routeData} /> : <Builder />}
+      {routeData.length ? (
+        <RouteMap
+          routeData={routeData}
+          routeColors={
+            (events as { [key: string]: { colors?: string[] } })[
+              (resolvedParams.e as string) || ""
+            ]?.colors || routeColors
+          }
+        />
+      ) : (
+        <Builder />
+      )}
     </main>
   );
 };

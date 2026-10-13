@@ -7,7 +7,7 @@ import { getById, minZoom, maxZoom, setupMap, essential } from "../_utils/map";
 import * as maplibreGl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import * as turf from "@turf/turf";
-import { darkBlue, lightGray, pinkRgb, routeColors } from "../_utils/colors";
+import { darkBlue, lightGray, pinkRgb } from "../_utils/colors";
 import Bouncer from "./Bouncer";
 
 export type Route = {
@@ -26,9 +26,10 @@ type FixedDeviceOrientationEvent = DeviceOrientationEvent & {
 
 type RouteMapProps = {
   routeData: Route[];
+  routeColors: string[];
 };
 
-const RouteMap = ({ routeData }: RouteMapProps) => {
+const RouteMap = ({ routeData, routeColors }: RouteMapProps) => {
   const [loading, setLoading] = useState(true);
 
   const mapContainerId = "map";

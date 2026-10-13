@@ -3,6 +3,7 @@ import * as turf from "@turf/turf";
 import { cache } from "react";
 import { Params } from "./types";
 import { Route } from "../_components/RouteMap";
+import { events } from "./events";
 
 const getRoute = async (id: string) =>
   await fetch(`https://api.footpathapp.com/v2/routes/${id}`, {
@@ -48,6 +49,8 @@ export const getData = cache(async (resolvedParams: Params) =>
             .split(",")
             .map((routeId: string) => getRoute(routeId)),
         )
-      : []) as Route[]
+      : (events as { [key: string]: { routes: unknown } })[
+          resolvedParams.e as string
+        ]?.routes || []) as Route[]
   ).sort((a, b) => b.stats.distance - a.stats.distance),
 );
