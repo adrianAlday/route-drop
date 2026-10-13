@@ -1,6 +1,6 @@
 import { IconUtil } from "./_utils/iconUtil";
 
-const side = 512;
+const side = 180;
 const scale = 1.0;
 
 export const contentType = "image/png";
