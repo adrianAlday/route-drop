@@ -44,17 +44,41 @@ const RouteMap = ({ routeData, routeColors }: RouteMapProps) => {
 
     const mapInstance = new maplibreGl.Map({
       container: mapContainerId,
-      center: turf.centerMean(
-        turf.featureCollection(
-          routeData.map((route) => turf.point(route.coordinates[0])),
-        ),
-      ).geometry.coordinates as [number, number],
       minZoom,
-      zoom: 16,
       attributionControl: false,
       localIdeographFontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
       // hash: true,
     });
+
+    const fitBounds = (
+      features: Feature[],
+      options?: { duration?: number; maxZoom?: number },
+    ) => {
+      const boundingBox = turf.bbox(turf.featureCollection(features));
+
+      const controlMargin = 10;
+      const controlSize = 30;
+
+      mapInstance.fitBounds(
+        [
+          [boundingBox[0], boundingBox[1]],
+          [boundingBox[2], boundingBox[3]],
+        ],
+        {
+          padding: controlMargin + controlSize + controlMargin,
+          essential,
+          ...options,
+        },
+      );
+    };
+
+    fitBounds(
+      routeData.map((route) => turf.point(route.coordinates[0])),
+      {
+        maxZoom: 16,
+        duration: 0,
+      },
+    );
 
     setupMap(mapInstance);
 
@@ -157,29 +181,15 @@ const RouteMap = ({ routeData, routeColors }: RouteMapProps) => {
 
       mapInstance.resize();
 
-      const fitBounds = () => {
-        const boundingBox = turf.bbox(
-          turf.featureCollection(routeData.map((route) => route.lineString)),
-        );
-
-        const controlMargin = 10;
-        const controlSize = 30;
-
-        mapInstance.fitBounds(
-          [
-            [boundingBox[0], boundingBox[1]],
-            [boundingBox[2], boundingBox[3]],
-          ],
-          {
-            padding: controlMargin + controlSize + controlMargin,
-            maxZoom,
-            essential,
-          },
+      const fitRoutes = () => {
+        fitBounds(
+          routeData.map((route) => route.lineString),
+          { maxZoom },
         );
       };
 
       mapInstance.once("idle", () => {
-        fitBounds();
+        fitRoutes();
       });
 
       const geolocateControl = new maplibreGl.GeolocateControl({
@@ -274,7 +284,7 @@ const RouteMap = ({ routeData, routeColors }: RouteMapProps) => {
 
                 orientationBeam.style.opacity = "0";
 
-                fitBounds();
+                fitRoutes();
               }
             }
           }
