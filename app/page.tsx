@@ -46,3 +46,5 @@ const HomePage = async ({ searchParams }: HomePageProps) => {
 };
 
 export default HomePage;
+
+// use event color for location circle and beam
