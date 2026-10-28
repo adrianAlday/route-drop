@@ -16,7 +16,9 @@ export const generateMetadata = async ({ searchParams }: HomePageProps) => {
   return {
     title: `Route Drop ${routeData.length ? "-" : ""} ${routeData.map((route) => route.title).join(", ")}`,
     openGraph: {
-      images: [`/api/opengraph-image?r=${resolvedParams.r}`],
+      images: [
+        `/api/opengraph-image?${new URLSearchParams(resolvedParams as unknown as string).toString()}`,
+      ],
     },
   };
 };

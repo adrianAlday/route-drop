@@ -3,6 +3,7 @@ import { getData } from "@/app/_utils/getData";
 import { Route } from "@/app/_components/RouteMap";
 import { darkBlue, lightGray, routeColors } from "@/app/_utils/colors";
 import { ImageResponse } from "next/og";
+import { events } from "@/app/_utils/events";
 
 const loadGoogleFont = async ({
   name,
@@ -35,9 +36,12 @@ export const GET = async (request: NextRequest) => {
     const title = "route drop";
 
     const { searchParams } = new URL(request.url);
-    const lines = (await getData({ r: searchParams.get("r") as string })).map(
-      (route: Route) => route.title,
-    ) as string[];
+    const event = events[searchParams.get("e") as string];
+
+    const lines = (
+      (event?.routes as unknown as Route[]) ||
+      (await getData({ r: searchParams.get("r") as string }))
+    ).map((route: Route) => route.title) as string[];
 
     const name = "Montserrat";
     const style = "italic";
@@ -75,7 +79,10 @@ export const GET = async (request: NextRequest) => {
           {lines.map((line, index) => (
             <div
               key={index}
-              style={{ fontSize: 64, color: routeColors[index] }}
+              style={{
+                fontSize: 64,
+                color: (event?.colors || routeColors)[index],
+              }}
             >
               {line}
             </div>
