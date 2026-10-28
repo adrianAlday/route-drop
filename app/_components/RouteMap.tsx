@@ -377,7 +377,8 @@ const RouteMap = ({ routeData, routeColors }: RouteMapProps) => {
               width: 17px;
             }
             .maplibregl-user-location-accuracy-circle {
-              background-color: rgba(${pinkRgb},0.33);
+              background-color: ${routeColors[0]};
+              opacity: 0.33 !important;
             }
           `}
         </style>
